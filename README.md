@@ -1,0 +1,4 @@
+actionpack-page_caching
+=======================
+
+Static page caching for Action Pack (removed from core in Rails 4.0)
