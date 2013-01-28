@@ -148,6 +148,12 @@ class PageCachingTest < ActionController::TestCase
     end
   end
 
+  def test_should_cache_head_with_ok_status
+    head :ok
+    assert_response :ok
+    assert_page_cached :ok, 'head with ok status should have been cached'
+  end
+
   def test_should_cache_get_with_ok_status
     get :ok
     assert_response :ok
