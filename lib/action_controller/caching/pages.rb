@@ -185,6 +185,10 @@ module ActionController
 
         self.class.cache_page(content || response.body, path, extension, gzip)
       end
+
+      def caching_allowed?
+        (request.get? || request.head?) && response.status == 200
+      end
     end
   end
 end
