@@ -30,6 +30,10 @@ treated the same. Content management systems -- including weblogs and wikis --
 have many pages that are a great fit for this approach, but account-based systems
 where people log in and manipulate their own data are often less likely candidates.
 
+First you need to set `page_cache_directory` in your configuration file:
+
+	config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
+
 Specifying which actions to cache is done through the `caches_page` class method:
 
     class WeblogController < ActionController::Base
