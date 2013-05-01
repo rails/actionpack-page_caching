@@ -3,7 +3,7 @@ actionpack-page_caching
 
 Static page caching for Action Pack (removed from core in Rails 4.0).
 
-**NOTE:** It will continue to be maintained until Rails 5.
+**NOTE:** It will continue to be officially maintained until Rails 4.1.
 
 Installation
 ------------
