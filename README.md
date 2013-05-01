@@ -1,7 +1,9 @@
 actionpack-page_caching
 =======================
 
-Static page caching for Action Pack (removed from core in Rails 4.0)
+Static page caching for Action Pack (removed from core in Rails 4.0).
+
+**NOTE:** It will continue to be maintained until Rails 5.
 
 Installation
 ------------
@@ -32,7 +34,7 @@ where people log in and manipulate their own data are often less likely candidat
 
 First you need to set `page_cache_directory` in your configuration file:
 
-	config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
+    config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
 
 Specifying which actions to cache is done through the `caches_page` class method:
 
