@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ['lib']
 
-  gem.add_dependency 'actionpack', '>= 4.0.0.beta', '< 5.0'
+  gem.add_dependency 'actionpack', '>= 4.0.0.beta', '< 5'
 
   gem.add_development_dependency 'mocha'
 end
