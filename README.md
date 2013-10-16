@@ -62,7 +62,7 @@ and friends:
       end
     end
 
-Additionally, you can expire caches using [Sweepers](http://edgeapi.rubyonrails.org/classes/ActionController/Caching/Sweeping.html)
+Additionally, you can expire caches using [Sweepers](https://github.com/rails/rails-observers#action-controller-sweeper)
 that act on changes in the model to determine when a cache is supposed to be expired.
 
 Contributing
