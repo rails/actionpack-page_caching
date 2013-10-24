@@ -6,7 +6,11 @@ rvm:
   - 2.0.0
 gemfile:
   - Gemfile
+  - gemfiles/Gemfile-4-0-stable
   - gemfiles/Gemfile-edge
+matrix:
+  allow_failures:
+    - gemfile: gemfiles/Gemfile-edge
 notifications:
   email: false
   irc:
