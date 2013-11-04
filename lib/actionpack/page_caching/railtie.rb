@@ -3,7 +3,7 @@ require 'rails/railtie'
 module ActionPack
   module PageCaching
     class Railtie < Rails::Railtie
-      initializer 'action_pack.page_caching' do |app|
+      initializer 'action_pack.page_caching' do
         ActiveSupport.on_load(:action_controller) do
           require 'action_controller/caching/pages'
 
