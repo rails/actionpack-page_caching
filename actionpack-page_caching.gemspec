@@ -8,6 +8,7 @@ Gem::Specification.new do |gem|
   gem.description   = 'Static page caching for Action Pack (removed from core in Rails 4.0)'
   gem.summary       = 'Static page caching for Action Pack (removed from core in Rails 4.0)'
   gem.homepage      = 'https://github.com/rails/actionpack-page_caching'
+  gem.license       = 'MIT'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
