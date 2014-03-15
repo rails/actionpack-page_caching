@@ -1,5 +1,5 @@
 require 'fileutils'
-require 'active_support/core_ext/class/attribute_accessors'
+require 'active_support/core_ext/module/attribute_accessors'
 
 module ActionController
   module Caching
