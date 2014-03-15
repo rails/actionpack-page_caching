@@ -1,3 +1,7 @@
+# 1.0.3
+
+* Fix deprecated attribute_accessors require.
+
 # 1.0.2
 
 * Fix load order problem with other gems.
