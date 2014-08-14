@@ -1,4 +1,4 @@
-actionpack-page_caching
+actionpack-page_caching_multithread
 =======================
 
 Static page caching for Action Pack (removed from core in Rails 4.0).
@@ -10,7 +10,7 @@ Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'actionpack-page_caching'
+    gem 'actionpack-page_caching_multithread'
 
 And then execute:
 
@@ -18,7 +18,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install actionpack-page_caching
+    $ gem install actionpack-page_caching_multithread
 
 Usage
 -----
@@ -77,5 +77,5 @@ Contributing
 Code Status
 -----------
 
-* [![Build Status](https://travis-ci.org/rails/actionpack-page_caching.png?branch=master)](https://travis-ci.org/rails/page_caching)
-* [![Dependency Status](https://gemnasium.com/rails/actionpack-page_caching.png)](https://gemnasium.com/rails/actionpack-page_caching)
+* [![Build Status](https://travis-ci.org/dimelo/actionpack-page_caching_multithread.png?branch=master)](https://travis-ci.org/dimelo/page_caching_multithread)
+* [![Dependency Status](https://gemnasium.com/dimelo/actionpack-page_caching_multithread.png)](https://gemnasium.com/dimelo/actionpack-page_caching_multithread)

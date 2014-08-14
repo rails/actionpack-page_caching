@@ -1,7 +1,7 @@
 require 'bundler/setup'
 require 'minitest/autorun'
 require 'action_controller'
-require 'action_controller/page_caching'
+require 'action_controller/page_caching_multithread'
 
 SharedTestRoutes = ActionDispatch::Routing::RouteSet.new
 
