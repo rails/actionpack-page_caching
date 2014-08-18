@@ -42,7 +42,7 @@ module ActionController
     module Pages
       extend ActiveSupport::Concern
 
-      included do
+      module ClassMethods
         # The cache directory should be the document root for the web server and is
         # set using <tt>Base.page_cache_directory = "/document/root"</tt>. For Rails,
         # this directory has already been set to Rails.public_path (which is usually
@@ -50,17 +50,29 @@ module ActionController
         # to avoid naming conflicts with files in <tt>public/</tt>, but doing so will
         # likely require configuring your web server to look in the new location for
         # cached files.
-        class_attribute :page_cache_directory
-        self.page_cache_directory ||= ''
+        def page_cache_directory
+          thread_storage[:page_cache_directory]
+        end
 
         # The compression used for gzip. If +false+ (default), the page is not compressed.
         # If can be a symbol showing the ZLib compression method, for example, <tt>:best_compression</tt>
         # or <tt>:best_speed</tt> or an integer configuring the compression level.
-        class_attribute :page_cache_compression
-        self.page_cache_compression ||= false
-      end
+        def page_cache_compression
+          thread_storage[:page_cache_compression]
+        end
 
-      module ClassMethods
+        def page_cache_directory=(value)
+          thread_storage[:page_cache_directory] = value
+        end
+
+        def page_cache_compression=(value)
+          thread_storage[:page_cache_compression] = value
+        end
+
+        def thread_storage
+          Thread.current[:multiple_page_caching] ||= {}
+        end
+
         # Expires the page that was cached with the +path+ as a key.
         #
         #   expire_page '/lists/show'
@@ -82,8 +94,14 @@ module ActionController
           path = page_cache_path(path, extension)
 
           instrument_page_cache :write_page, path do
-            FileUtils.makedirs(File.dirname(path))
-            File.open(path, 'wb+') { |f| f.write(content) }
+            tmpfile = Tempfile.new([File.basename(path), File.extname(path)])
+            tmpfile.write(content)
+            tmpfile.close
+
+            dirname = File.dirname(path)
+            FileUtils.makedirs(dirname) unless File.directory?(dirname)
+            FileUtils.mv(tmpfile.path, path)
+
             if gzip
               Zlib::GzipWriter.open(path + '.gz', gzip) { |f| f.write(content) }
             end
