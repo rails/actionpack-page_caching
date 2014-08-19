@@ -103,7 +103,8 @@ module ActionController
             FileUtils.mv(tmpfile.path, path)
 
             if gzip
-              Zlib::GzipWriter.open(path + '.gz', gzip) { |f| f.write(content) }
+              Zlib::GzipWriter.open(tmpfile.path + '.gz', gzip) { |gz| gz.write(content) }
+              FileUtils.mv(tmpfile.path + '.gz', path + '.gz')
             end
           end
         end
