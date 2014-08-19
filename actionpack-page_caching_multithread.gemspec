@@ -3,10 +3,10 @@
 Gem::Specification.new do |gem|
   gem.name          = 'actionpack-page_caching_multithread'
   gem.version       = '1.1'
-  gem.author        = 'David Heinemeier Hansson'
-  gem.email         = 'david@loudthinking.com'
-  gem.description   = 'Static page caching for Action Pack (removed from core in Rails 4.0)'
-  gem.summary       = 'Static page caching for Action Pack (removed from core in Rails 4.0)'
+  gem.author        = 'Dimelo'
+  gem.email         = 'contact@dimelo.com'
+  gem.description   = 'Threadsafe Static page caching for Action Pack 4.x'
+  gem.summary       = 'Threadsafe Static page caching for Action Pack 4.x'
   gem.homepage      = 'https://github.com/dimelo/actionpack-page_caching_multithread'
   gem.license       = 'MIT'
 
