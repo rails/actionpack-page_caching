@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |gem|
   gem.name          = 'actionpack-page_caching_multithread'
-  gem.version       = '1.1'
+  gem.version       = '1.2'
   gem.author        = 'Dimelo'
   gem.email         = 'contact@dimelo.com'
   gem.description   = 'Threadsafe Static page caching for Action Pack 4.x'
