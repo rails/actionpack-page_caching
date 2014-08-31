@@ -10,7 +10,9 @@ Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'actionpack-page_caching'
+```ruby
+gem 'actionpack-page_caching'
+```
 
 And then execute:
 
@@ -34,13 +36,17 @@ where people log in and manipulate their own data are often less likely candidat
 
 First you need to set `page_cache_directory` in your configuration file:
 
-    config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
+```ruby
+config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
+```
 
 Specifying which actions to cache is done through the `caches_page` class method:
 
-    class WeblogController < ActionController::Base
-      caches_page :show, :new
-    end
+```ruby
+class WeblogController < ActionController::Base
+  caches_page :show, :new
+end
+```
 
 This will generate cache files such as `weblog/show/5.html` and
 `weblog/new.html`, which match the URLs used that would normally trigger
@@ -54,13 +60,15 @@ in a lazy regeneration approach where the cache is not restored before another
 hit is made against it. The API for doing so mimics the options from `url_for`
 and friends:
 
-    class WeblogController < ActionController::Base
-      def update
-        List.update(params[:list][:id], params[:list])
-        expire_page action: 'show', id: params[:list][:id]
-        redirect_to action: 'show', id: params[:list][:id]
-      end
-    end
+```ruby
+class WeblogController < ActionController::Base
+  def update
+    List.update(params[:list][:id], params[:list])
+    expire_page action: 'show', id: params[:list][:id]
+    redirect_to action: 'show', id: params[:list][:id]
+  end
+end
+```
 
 Additionally, you can expire caches using [Sweepers](https://github.com/rails/rails-observers#action-controller-sweeper)
 that act on changes in the model to determine when a cache is supposed to be expired.
