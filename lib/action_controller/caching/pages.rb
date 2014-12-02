@@ -101,6 +101,8 @@ module ActionController
             dirname = File.dirname(path)
             FileUtils.makedirs(dirname) unless File.directory?(dirname)
             FileUtils.mv(tmpfile.path, path)
+            # Apply umask to file, since Tempfile creates the file with 600 perms
+            File.chmod(0666 - File.umask, path)
 
             if gzip
               Zlib::GzipWriter.open(tmpfile.path + '.gz', gzip) { |gz| gz.write(content) }
