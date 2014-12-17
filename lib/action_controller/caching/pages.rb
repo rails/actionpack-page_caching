@@ -140,7 +140,7 @@ module ActionController
         private
           def page_cache_file(path, extension, domain = nil)
             prefix = domain ? ('/'+domain) : ''
-            name = (path.empty? || path == '/') ? (prefix + '/index') : URI.parser.unescape(path.chomp('/'))
+            name = (path.empty? || path == '/') ? (prefix + '/index') : URI.parser.unescape(prefix + path.chomp('/'))
             unless (name.split('/').last || name).include? '.'
               name << (extension || self.default_static_extension)
             end
