@@ -10,9 +10,7 @@ Installation
 
 Add this line to your application's Gemfile:
 
-```ruby
-gem 'actionpack-page_caching'
-```
+    gem 'actionpack-page_caching'
 
 And then execute:
 
@@ -36,17 +34,13 @@ where people log in and manipulate their own data are often less likely candidat
 
 First you need to set `page_cache_directory` in your configuration file:
 
-```ruby
-config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
-```
+    config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
 
 Specifying which actions to cache is done through the `caches_page` class method:
 
-```ruby
-class WeblogController < ActionController::Base
-  caches_page :show, :new
-end
-```
+    class WeblogController < ActionController::Base
+      caches_page :show, :new
+    end
 
 This will generate cache files such as `weblog/show/5.html` and
 `weblog/new.html`, which match the URLs used that would normally trigger
@@ -55,20 +49,25 @@ check for the existence of files on disk, and to serve them directly when found,
 without passing the request through to Action Pack. This is much faster than
 handling the full dynamic request in the usual way.
 
+There is a possibility to provide a subdirectory for stored cache, if your project
+requires use of different subdomains. It can be a class method or a string.
+
+    class WeblogController < ActionController::Base
+      caches_page :show, :new, :domain => :method_for_selecting_domain
+    end
+
 Expiration of the cache is handled by deleting the cached file, which results
 in a lazy regeneration approach where the cache is not restored before another
 hit is made against it. The API for doing so mimics the options from `url_for`
 and friends:
 
-```ruby
-class WeblogController < ActionController::Base
-  def update
-    List.update(params[:list][:id], params[:list])
-    expire_page action: 'show', id: params[:list][:id]
-    redirect_to action: 'show', id: params[:list][:id]
-  end
-end
-```
+    class WeblogController < ActionController::Base
+      def update
+        List.update(params[:list][:id], params[:list])
+        expire_page action: 'show', id: params[:list][:id]
+        redirect_to action: 'show', id: params[:list][:id]
+      end
+    end
 
 Additionally, you can expire caches using [Sweepers](https://github.com/rails/rails-observers#action-controller-sweeper)
 that act on changes in the model to determine when a cache is supposed to be expired.
