@@ -64,9 +64,9 @@ module ActionController
         # Expires the page that was cached with the +path+ as a key.
         #
         #   expire_page '/lists/show'
-        def expire_page(path)
+        def expire_page(path, domain = nil)
           return unless perform_caching
-          path = page_cache_path(path)
+          path = page_cache_path(path, nil, domain)
 
           instrument_page_cache :expire_page, path do
             File.delete(path) if File.exist?(path)
@@ -77,10 +77,9 @@ module ActionController
         # Manually cache the +content+ in the key determined by +path+.
         #
         #   cache_page "I'm the cached content", '/lists/show'
-        def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION)
+        def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION, domain = nil)
           return unless perform_caching
-          path = page_cache_path(path, extension)
-
+          path =  page_cache_path(path, extension, domain)
           instrument_page_cache :write_page, path do
             FileUtils.makedirs(File.dirname(path))
             File.open(path, 'wb+') { |f| f.write(content) }
@@ -120,22 +119,36 @@ module ActionController
             Zlib::BEST_COMPRESSION
           end
 
+          options[:domain] = options[:domain] || nil
+          domain = case options[:domain]
+            when Symbol
+              # Call the method named by the symbol instead
+              before_action { |controller|
+                domain = controller.send(options[:domain])
+              }
+            when String
+              domain = options[:domain]
+            else
+              domain = nil
+          end
+
           after_filter({only: actions}.merge(options)) do |c|
-            c.cache_page(nil, nil, gzip_level)
+            c.cache_page(nil, nil, gzip_level, domain)
           end
         end
 
         private
-          def page_cache_file(path, extension)
-            name = (path.empty? || path == '/') ? '/index' : URI.parser.unescape(path.chomp('/'))
+          def page_cache_file(path, extension, domain = nil)
+            prefix = domain ? ('/'+domain) : ''
+            name = (path.empty? || path == '/') ? (prefix + '/index') : URI.parser.unescape(path.chomp('/'))
             unless (name.split('/').last || name).include? '.'
               name << (extension || self.default_static_extension)
             end
             return name
           end
 
-          def page_cache_path(path, extension = nil)
-            page_cache_directory.to_s + page_cache_file(path, extension)
+          def page_cache_path(path, extension = nil, domain = nil)
+            page_cache_directory.to_s + page_cache_file(path, extension, domain)
           end
 
           def instrument_page_cache(name, path)
@@ -145,17 +158,18 @@ module ActionController
 
       # Expires the page that was cached with the +options+ as a key.
       #
-      #   expire_page controller: 'lists', action: 'show'
+      #   expire_page controller: 'lists', action: 'show', domain: 'scouts'
       def expire_page(options = {})
         return unless self.class.perform_caching
 
         if options.is_a?(Hash)
+          options[:domain].present? ? domain = options[:domain] : nil
           if options[:action].is_a?(Array)
             options[:action].each do |action|
-              self.class.expire_page(url_for(options.merge(only_path: true, action: action)))
+              self.class.expire_page(url_for(options.merge(only_path: true, action: action)), domain)
             end
           else
-            self.class.expire_page(url_for(options.merge(only_path: true)))
+            self.class.expire_page(url_for(options.merge(only_path: true)), domain)
           end
         else
           self.class.expire_page(options)
@@ -167,9 +181,8 @@ module ActionController
       # request being handled is used.
       #
       #   cache_page "I'm the cached content", controller: 'lists', action: 'show'
-      def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION)
+      def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION, domain = nil)
         return unless self.class.perform_caching && caching_allowed?
-
         path = case options
           when Hash
             url_for(options.merge(only_path: true, format: params[:format]))
@@ -182,8 +195,7 @@ module ActionController
         if (type = Mime::LOOKUP[self.content_type]) && (type_symbol = type.symbol).present?
           extension = ".#{type_symbol}"
         end
-
-        self.class.cache_page(content || response.body, path, extension, gzip)
+        self.class.cache_page(content || response.body, path, extension, gzip, domain)
       end
 
       def caching_allowed?
