@@ -77,8 +77,9 @@ module ActionController
         # Manually cache the +content+ in the key determined by +path+.
         #
         #   cache_page "I'm the cached content", '/lists/show'
-        def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION, domain = nil)
+        def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION, domain = nil, abort = false)
           return unless perform_caching
+          return if abort
           path =  page_cache_path(path, extension, domain)
           instrument_page_cache :write_page, path do
             FileUtils.makedirs(File.dirname(path))
@@ -132,8 +133,20 @@ module ActionController
               domain = nil
           end
 
+
+          options[:check] = options[:check] || false
+          abort = case options[:check]
+            when Symbol
+              # Call the method named by the symbol instead
+              before_action { |controller|
+                abort = controller.send(options[:check])
+              }
+            else
+              abort = false
+          end
+
           after_filter({only: actions}.merge(options)) do |c|
-            c.cache_page(nil, nil, gzip_level, domain)
+            c.cache_page(nil, nil, gzip_level, domain, abort)
           end
         end
 
@@ -181,7 +194,7 @@ module ActionController
       # request being handled is used.
       #
       #   cache_page "I'm the cached content", controller: 'lists', action: 'show'
-      def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION, domain = nil)
+      def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION, domain = nil, abort = false)
         return unless self.class.perform_caching && caching_allowed?
         path = case options
           when Hash
@@ -195,7 +208,7 @@ module ActionController
         if (type = Mime::LOOKUP[self.content_type]) && (type_symbol = type.symbol).present?
           extension = ".#{type_symbol}"
         end
-        self.class.cache_page(content || response.body, path, extension, gzip, domain)
+        self.class.cache_page(content || response.body, path, extension, gzip, domain, abort)
       end
 
       def caching_allowed?
