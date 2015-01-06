@@ -1,4 +1,5 @@
 require 'abstract_unit'
+require 'mocha/setup'
 
 CACHE_DIR = 'test_cache'
 # Don't change '/../temp/' cavalierly or you might hose something you don't want hosed
