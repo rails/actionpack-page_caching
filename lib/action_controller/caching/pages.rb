@@ -135,7 +135,7 @@ module ActionController
           end
 
           def page_cache_path(path, extension = nil)
-            page_cache_directory.to_s + page_cache_file(path, extension)
+            File.join(page_cache_directory.to_s, page_cache_file(path, extension))
           end
 
           def instrument_page_cache(name, path)
