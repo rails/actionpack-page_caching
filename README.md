@@ -23,7 +23,7 @@ Or install it yourself as:
 Usage
 -----
 
-Page caching is an approach to caching where the entire action output of is
+Page caching is an approach to caching where the entire action output is
 stored as a HTML file that the web server can serve without going through
 Action Pack. This is the fastest way to cache your content as opposed to going
 dynamically through the process of generating the content. Unfortunately, this
