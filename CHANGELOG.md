@@ -1,6 +1,6 @@
-# 1.0.3
+# 2.0.0
 
-* Add support for Rails 5.0.x
+* Add support for Rails 5.0.x, remove support for Rails 4
 
 # 1.0.2
 
