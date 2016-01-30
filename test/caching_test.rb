@@ -78,20 +78,20 @@ class PageCachingTestController < CachingController
   end
 
   def custom_path
-    render text: 'Super soaker'
+    render html: 'Super soaker'
     cache_page('Super soaker', '/index.html')
   end
 
   def default_gzip
-    render text: 'Text'
+    render html: 'Text'
   end
 
   def no_gzip
-    render text: 'PNG'
+    render html: 'PNG'
   end
 
   def gzip_level
-    render text: 'Big text'
+    render html: 'Big text'
   end
 
   def expire_custom_path
@@ -100,13 +100,13 @@ class PageCachingTestController < CachingController
   end
 
   def trailing_slash
-    render text: 'Sneak attack'
+    render html: 'Sneak attack'
   end
 
   def about_me
     respond_to do |format|
-      format.html { render text: 'I am html' }
-      format.xml  { render text: 'I am xml'  }
+      format.html { render html: 'I am html' }
+      format.xml  { render xml: 'I am xml'  }
     end
   end
 end
@@ -115,7 +115,11 @@ class PageCachingTest < ActionController::TestCase
   def setup
     super
 
-    @request = ActionController::TestRequest.new
+    @request = if ActionController::TestRequest.respond_to?(:create)
+      ActionController::TestRequest.create
+    else
+      ActionController::TestRequest.new
+    end
     @request.host = 'hostname.com'
     @request.env.delete('PATH_INFO')
 
@@ -123,7 +127,11 @@ class PageCachingTest < ActionController::TestCase
     @controller.perform_caching = true
     @controller.cache_store = :file_store, FILE_STORE_PATH
 
-    @response   = ActionController::TestResponse.new
+    @response = if ActionController.const_defined?('TestResponse')
+      ActionController::TestResponse.new
+    else
+      ActionDispatch::TestResponse.new
+    end
 
     @params = { controller: 'posts', action: 'index', only_path: true }
 

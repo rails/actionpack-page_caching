@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Add support for Rails 5.0.x, remove support for Rails 4
+
 # 1.0.2
 
 * Fix load order problem with other gems.

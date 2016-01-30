@@ -2,17 +2,13 @@ language: ruby
 before_install:
   - gem install bundler
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1
+  - 2.2.4
+  - 2.3.0
 gemfile:
   - Gemfile
-  - gemfiles/Gemfile-4-0-stable
-  - gemfiles/Gemfile-4-1-stable
   - gemfiles/Gemfile-edge
 matrix:
   allow_failures:
-    - gemfile: gemfiles/Gemfile-edge
 notifications:
   email: false
   irc:
