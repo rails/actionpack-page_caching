@@ -38,6 +38,17 @@ First you need to set `page_cache_directory` in your configuration file:
 config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
 ```
 
+If you want to test page caching in the Rails' development environment, just set
+`page_cache_directory` to `public` directory only as your app server will directly
+pick cached file from there because app server doesn't have the ability to
+configure extra directory setting e.g. `/public/deploy` as web servers have it.
+
+Set development configuration file like below:
+
+```ruby
+config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public"
+```
+
 Specifying which actions to cache is done through the `caches_page` class method:
 
 ```ruby
