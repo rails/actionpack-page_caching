@@ -53,6 +53,23 @@ check for the existence of files on disk, and to serve them directly when found,
 without passing the request through to Action Pack. This is much faster than
 handling the full dynamic request in the usual way.
 
+If your pages can vary based on some context, say a domain name or subdomain,
+you can store them inside a subdirectory chosen at runtime.
+Just give the `prefix` option a symbol naming a method it can call.
+
+```ruby
+class WeblogController < ActionController::Base
+  caches_page :show, :new, prefix: :choose_prefix
+
+  private
+
+  def choose_prefix
+    # Don't trust just anything:
+    request.subdomain.presence if request.subdomain =~ /\A[a-z]+\z/
+  end
+end
+```
+
 Expiration of the cache is handled by deleting the cached file, which results
 in a lazy regeneration approach where the cache is not restored before another
 hit is made against it. The API for doing so mimics the options from `url_for`

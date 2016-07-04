@@ -60,6 +60,7 @@ class PageCachingTestController < CachingController
   caches_page :default_gzip
   caches_page :no_gzip, gzip: false
   caches_page :gzip_level, gzip: :best_speed
+  caches_page :by_subdomain, prefix: :choose_prefix
 
   def ok
     head :ok
@@ -109,6 +110,16 @@ class PageCachingTestController < CachingController
       format.xml  { render text: 'I am xml'  }
     end
   end
+
+  def by_subdomain
+    render text: 'by_subdomain'
+  end
+
+  private
+
+  def choose_prefix
+    request.subdomain.presence
+  end
 end
 
 class PageCachingTest < ActionController::TestCase
@@ -152,13 +163,13 @@ class PageCachingTest < ActionController::TestCase
   def test_should_cache_head_with_ok_status
     head :ok
     assert_response :ok
-    assert_page_cached :ok, 'head with ok status should have been cached'
+    assert_page_cached :ok, nil, 'head with ok status should have been cached'
   end
 
   def test_should_cache_get_with_ok_status
     get :ok
     assert_response :ok
-    assert_page_cached :ok, 'get with ok status should have been cached'
+    assert_page_cached :ok, nil, 'get with ok status should have been cached'
   end
 
   def test_should_cache_with_custom_path
@@ -189,12 +200,12 @@ class PageCachingTest < ActionController::TestCase
   end
 
   def test_should_use_config_gzip_by_default
-    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_COMPRESSION)
+    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_COMPRESSION, nil)
     get :default_gzip
   end
 
   def test_should_set_gzip_level
-    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_SPEED)
+    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_SPEED, nil)
     get :gzip_level
   end
 
@@ -228,7 +239,7 @@ class PageCachingTest < ActionController::TestCase
         define_method "test_shouldnt_cache_#{method}_with_#{status}_status" do
           send(method, status)
           assert_response status
-          assert_page_not_cached status, "#{method} with #{status} status shouldn't have been cached"
+          assert_page_not_cached status, nil, "#{method} with #{status} status shouldn't have been cached"
         end
       end
     end
@@ -250,17 +261,31 @@ class PageCachingTest < ActionController::TestCase
     end
   end
 
+  def test_page_caching_with_prefix
+    @request.host = 'foo.test.host'
+    get :by_subdomain
+    assert_response :ok
+    assert_page_cached :by_subdomain, "foo"
+  end
+
+  def test_page_caching_with_nil_prefix
+    get :by_subdomain
+    assert_response :ok
+    assert_page_cached :by_subdomain, nil
+  end
+
   private
 
-    def assert_page_cached(action, message = "#{action} should have been cached")
-      assert page_cached?(action), message
+    def assert_page_cached(action, prefix = nil, message = "#{action} should have been cached")
+      assert page_cached?(action, prefix), message
     end
 
-    def assert_page_not_cached(action, message = "#{action} shouldn't have been cached")
-      assert !page_cached?(action), message
+    def assert_page_not_cached(action, prefix = nil, message = "#{action} shouldn't have been cached")
+      assert !page_cached?(action, prefix), message
     end
 
-    def page_cached?(action)
-      File.exist? "#{FILE_STORE_PATH}/page_caching_test/#{action}.html"
+    def page_cached?(action, prefix = nil)
+      prefix = prefix.present? ? "/#{prefix}" : ''
+      File.exist? "#{FILE_STORE_PATH}#{prefix}/page_caching_test/#{action}.html"
     end
 end
