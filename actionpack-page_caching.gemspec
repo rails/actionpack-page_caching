@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |gem|
   gem.name          = 'actionpack-page_caching'
-  gem.version       = '1.0.2'
+  gem.version       = '1.0.3'
   gem.author        = 'David Heinemeier Hansson'
   gem.email         = 'david@loudthinking.com'
   gem.description   = 'Static page caching for Action Pack (removed from core in Rails 4.0)'
