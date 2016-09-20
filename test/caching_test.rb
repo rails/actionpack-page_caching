@@ -116,11 +116,7 @@ class PageCachingTest < ActionController::TestCase
   def setup
     super
 
-    @request = if ActionController::TestRequest.respond_to?(:create)
-      ActionController::TestRequest.create
-    else
-      ActionController::TestRequest.new
-    end
+    @request = ActionDispatch::TestRequest.create
     @request.host = 'hostname.com'
     @request.env.delete('PATH_INFO')
 

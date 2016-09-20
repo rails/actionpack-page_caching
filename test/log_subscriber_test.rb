@@ -30,6 +30,9 @@ class ACLogSubscriberTest < ActionController::TestCase
 
     @cache_path = File.expand_path('../temp/test_cache', File.dirname(__FILE__))
     ActionController::Base.page_cache_directory = @cache_path
+    if ActionController::Base.respond_to?(:enable_fragment_cache_logging=)
+      ActionController::Base.enable_fragment_cache_logging = true
+    end
     @controller.cache_store = :file_store, @cache_path
     ActionController::LogSubscriber.attach_to :action_controller
   end
