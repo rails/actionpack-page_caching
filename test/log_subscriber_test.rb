@@ -24,7 +24,8 @@ class ACLogSubscriberTest < ActionController::TestCase
 
     @routes = SharedTestRoutes
     @routes.draw do
-      get ':controller(/:action)'
+      get 'another/log_subscribers/with_page_cache' =>
+          'another/log_subscribers#with_page_cache'
     end
 
     @cache_path = File.expand_path('../temp/test_cache', File.dirname(__FILE__))
