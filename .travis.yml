@@ -3,7 +3,9 @@ before_install:
   - gem install bundler
 rvm:
   - 1.9.3
-  - 2.2.4
+  - 2.0.0
+  - 2.1
+  - 2.2.5
   - 2.3.1
 gemfile:
   - Gemfile
@@ -16,6 +18,14 @@ matrix:
     - rvm: 1.9.3
       gemfile: Gemfile
     - rvm: 1.9.3
+      gemfile: gemfiles/Gemfile-edge
+    - rvm: 2.0.0
+      gemfile: Gemfile
+    - rvm: 2.0.0
+      gemfile: gemfiles/Gemfile-edge
+    - rvm: 2.1
+      gemfile: Gemfile
+    - rvm: 2.1
       gemfile: gemfiles/Gemfile-edge
   allow_failures:
 notifications:
