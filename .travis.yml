@@ -12,6 +12,11 @@ gemfile:
   - gemfiles/Gemfile-4-2-stable
   - gemfiles/Gemfile-edge
 matrix:
+  exclude:
+    - rvm: 1.9.3
+      gemfile: Gemfile
+    - rvm: 1.9.3
+      gemfile: gemfiles/Gemfile-edge
   allow_failures:
 notifications:
   email: false
