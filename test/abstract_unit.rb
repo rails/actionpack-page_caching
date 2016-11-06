@@ -1,7 +1,7 @@
-require 'bundler/setup'
-require 'minitest/autorun'
-require 'action_controller'
-require 'action_controller/page_caching'
+require "bundler/setup"
+require "minitest/autorun"
+require "action_controller"
+require "action_controller/page_caching"
 
 SharedTestRoutes = ActionDispatch::Routing::RouteSet.new
 
@@ -15,7 +15,7 @@ module ActionController
       @routes = SharedTestRoutes
 
       @routes.draw do
-        get ':controller(/:action)'
+        get ":controller(/:action)"
       end
     end
   end

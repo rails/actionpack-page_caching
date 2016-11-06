@@ -1,1 +1,1 @@
-require 'actionpack/page_caching/railtie'
+require "actionpack/page_caching/railtie"

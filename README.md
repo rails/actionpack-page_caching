@@ -9,7 +9,7 @@ Installation
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'actionpack-page_caching'
+gem "actionpack-page_caching"
 ```
 
 And then execute:
@@ -62,8 +62,8 @@ and friends:
 class WeblogController < ActionController::Base
   def update
     List.update(params[:list][:id], params[:list])
-    expire_page action: 'show', id: params[:list][:id]
-    redirect_to action: 'show', id: params[:list][:id]
+    expire_page action: "show", id: params[:list][:id]
+    redirect_to action: "show", id: params[:list][:id]
   end
 end
 ```

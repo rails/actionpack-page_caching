@@ -1,6 +1,6 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-gemspec path: '..'
+gemspec path: ".."
 
-gem 'rails', github: 'rails/rails', branch: '4-2-stable'
+gem "rails", github: "rails/rails", branch: "4-2-stable"
 gem "mime-types", "< 3"

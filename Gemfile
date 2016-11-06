@@ -1,6 +1,6 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 gemspec
 
-gem 'rails'
+gem "rails"
 gem "mime-types", "< 3"

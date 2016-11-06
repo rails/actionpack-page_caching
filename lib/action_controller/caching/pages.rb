@@ -1,5 +1,5 @@
-require 'fileutils'
-require 'active_support/core_ext/class/attribute_accessors'
+require "fileutils"
+require "active_support/core_ext/class/attribute_accessors"
 
 module ActionController
   module Caching
@@ -32,8 +32,8 @@ module ActionController
     #   class WeblogController < ActionController::Base
     #     def update
     #       List.update(params[:list][:id], params[:list])
-    #       expire_page action: 'show', id: params[:list][:id]
-    #       redirect_to action: 'show', id: params[:list][:id]
+    #       expire_page action: "show", id: params[:list][:id]
+    #       redirect_to action: "show", id: params[:list][:id]
     #     end
     #   end
     #
@@ -51,7 +51,7 @@ module ActionController
         # likely require configuring your web server to look in the new location for
         # cached files.
         class_attribute :page_cache_directory
-        self.page_cache_directory ||= ''
+        self.page_cache_directory ||= ""
 
         # The compression used for gzip. If +false+ (default), the page is not compressed.
         # If can be a symbol showing the ZLib compression method, for example, <tt>:best_compression</tt>
@@ -63,29 +63,29 @@ module ActionController
       module ClassMethods
         # Expires the page that was cached with the +path+ as a key.
         #
-        #   expire_page '/lists/show'
+        #   expire_page "/lists/show"
         def expire_page(path)
           return unless perform_caching
           path = page_cache_path(path)
 
           instrument_page_cache :expire_page, path do
             File.delete(path) if File.exist?(path)
-            File.delete(path + '.gz') if File.exist?(path + '.gz')
+            File.delete(path + ".gz") if File.exist?(path + ".gz")
           end
         end
 
         # Manually cache the +content+ in the key determined by +path+.
         #
-        #   cache_page "I'm the cached content", '/lists/show'
+        #   cache_page "I'm the cached content", "/lists/show"
         def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION)
           return unless perform_caching
           path = page_cache_path(path, extension)
 
           instrument_page_cache :write_page, path do
             FileUtils.makedirs(File.dirname(path))
-            File.open(path, 'wb+') { |f| f.write(content) }
+            File.open(path, "wb+") { |f| f.write(content) }
             if gzip
-              Zlib::GzipWriter.open(path + '.gz', gzip) { |f| f.write(content) }
+              Zlib::GzipWriter.open(path + ".gz", gzip) { |f| f.write(content) }
             end
           end
         end
@@ -109,26 +109,27 @@ module ActionController
           options = actions.extract_options!
 
           gzip_level = options.fetch(:gzip, page_cache_compression)
-          gzip_level = case gzip_level
-          when Symbol
-            Zlib.const_get(gzip_level.upcase)
-          when Fixnum
-            gzip_level
-          when false
-            nil
-          else
-            Zlib::BEST_COMPRESSION
-          end
+          gzip_level = \
+            case gzip_level
+            when Symbol
+              Zlib.const_get(gzip_level.upcase)
+            when Fixnum
+              gzip_level
+            when false
+              nil
+            else
+              Zlib::BEST_COMPRESSION
+            end
 
-          after_filter({only: actions}.merge(options)) do |c|
+          after_filter({ only: actions }.merge(options)) do |c|
             c.cache_page(nil, nil, gzip_level)
           end
         end
 
         private
           def page_cache_file(path, extension)
-            name = (path.empty? || path == '/') ? '/index' : URI.parser.unescape(path.chomp('/'))
-            unless (name.split('/').last || name).include? '.'
+            name = (path.empty? || path == "/") ? "/index" : URI.parser.unescape(path.chomp("/"))
+            unless (name.split("/").last || name).include? "."
               name << (extension || self.default_static_extension)
             end
             return name
@@ -139,13 +140,13 @@ module ActionController
           end
 
           def instrument_page_cache(name, path)
-            ActiveSupport::Notifications.instrument("#{name}.action_controller", path: path){ yield }
+            ActiveSupport::Notifications.instrument("#{name}.action_controller", path: path) { yield }
           end
       end
 
       # Expires the page that was cached with the +options+ as a key.
       #
-      #   expire_page controller: 'lists', action: 'show'
+      #   expire_page controller: "lists", action: "show"
       def expire_page(options = {})
         return unless self.class.perform_caching
 
@@ -166,18 +167,19 @@ module ActionController
       # the contents of response.body is used. If no options are provided, the url of the current
       # request being handled is used.
       #
-      #   cache_page "I'm the cached content", controller: 'lists', action: 'show'
+      #   cache_page "I'm the cached content", controller: "lists", action: "show"
       def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION)
         return unless self.class.perform_caching && caching_allowed?
 
-        path = case options
+        path = \
+          case options
           when Hash
             url_for(options.merge(only_path: true, format: params[:format]))
           when String
             options
           else
             request.path
-        end
+          end
 
         if (type = Mime::LOOKUP[self.content_type]) && (type_symbol = type.symbol).present?
           extension = ".#{type_symbol}"

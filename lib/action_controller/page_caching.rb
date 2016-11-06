@@ -1,4 +1,4 @@
-require 'action_controller/caching/pages'
+require "action_controller/caching/pages"
 
 module ActionController
   module Caching

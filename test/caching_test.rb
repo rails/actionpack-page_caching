@@ -1,9 +1,9 @@
-require 'abstract_unit'
-require 'mocha/setup'
+require "abstract_unit"
+require "mocha/setup"
 
-CACHE_DIR = 'test_cache'
-# Don't change '/../temp/' cavalierly or you might hose something you don't want hosed
-FILE_STORE_PATH = File.join(File.dirname(__FILE__), '/../temp/', CACHE_DIR)
+CACHE_DIR = "test_cache"
+# Don't change "/../temp/" cavalierly or you might hose something you don't want hosed
+FILE_STORE_PATH = File.join(File.dirname(__FILE__), "/../temp/", CACHE_DIR)
 
 class CachingMetalController < ActionController::Metal
   abstract!
@@ -18,7 +18,7 @@ class PageCachingMetalTestController < CachingMetalController
   caches_page :ok
 
   def ok
-    self.response_body = 'ok'
+    self.response_body = "ok"
   end
 end
 
@@ -39,7 +39,7 @@ class PageCachingMetalTest < ActionController::TestCase
   def test_should_cache_get_with_ok_status
     get :ok
     assert_response :ok
-    assert File.exist?("#{FILE_STORE_PATH}/page_caching_metal_test/ok.html"), 'get with ok status should have been cached'
+    assert File.exist?("#{FILE_STORE_PATH}/page_caching_metal_test/ok.html"), "get with ok status should have been cached"
   end
 end
 
@@ -70,7 +70,7 @@ class PageCachingTestController < CachingController
   end
 
   def found
-    redirect_to action: 'ok'
+    redirect_to action: "ok"
   end
 
   def not_found
@@ -78,35 +78,35 @@ class PageCachingTestController < CachingController
   end
 
   def custom_path
-    render text: 'Super soaker'
-    cache_page('Super soaker', '/index.html')
+    render text: "Super soaker"
+    cache_page("Super soaker", "/index.html")
   end
 
   def default_gzip
-    render text: 'Text'
+    render text: "Text"
   end
 
   def no_gzip
-    render text: 'PNG'
+    render text: "PNG"
   end
 
   def gzip_level
-    render text: 'Big text'
+    render text: "Big text"
   end
 
   def expire_custom_path
-    expire_page('/index.html')
+    expire_page("/index.html")
     head :ok
   end
 
   def trailing_slash
-    render text: 'Sneak attack'
+    render text: "Sneak attack"
   end
 
   def about_me
     respond_to do |format|
-      format.html { render text: 'I am html' }
-      format.xml  { render text: 'I am xml'  }
+      format.html { render text: "I am html" }
+      format.xml  { render text: "I am xml"  }
     end
   end
 end
@@ -116,16 +116,16 @@ class PageCachingTest < ActionController::TestCase
     super
 
     @request = ActionController::TestRequest.new
-    @request.host = 'hostname.com'
-    @request.env.delete('PATH_INFO')
+    @request.host = "hostname.com"
+    @request.env.delete("PATH_INFO")
 
     @controller = PageCachingTestController.new
     @controller.perform_caching = true
     @controller.cache_store = :file_store, FILE_STORE_PATH
 
-    @response   = ActionController::TestResponse.new
+    @response = ActionController::TestResponse.new
 
-    @params = { controller: 'posts', action: 'index', only_path: true }
+    @params = { controller: "posts", action: "index", only_path: true }
 
     FileUtils.rm_rf(File.dirname(FILE_STORE_PATH))
     FileUtils.mkdir_p(FILE_STORE_PATH)
@@ -139,26 +139,26 @@ class PageCachingTest < ActionController::TestCase
   def test_page_caching_resources_saves_to_correct_path_with_extension_even_if_default_route
     with_routing do |set|
       set.draw do
-        get 'posts.:format', to: 'posts#index', as: :formatted_posts
-        get '/', to: 'posts#index', as: :main
+        get "posts.:format", to: "posts#index", as: :formatted_posts
+        get "/", to: "posts#index", as: :main
       end
-      @params[:format] = 'rss'
-      assert_equal '/posts.rss', @routes.url_for(@params)
+      @params[:format] = "rss"
+      assert_equal "/posts.rss", @routes.url_for(@params)
       @params[:format] = nil
-      assert_equal '/', @routes.url_for(@params)
+      assert_equal "/", @routes.url_for(@params)
     end
   end
 
   def test_should_cache_head_with_ok_status
     head :ok
     assert_response :ok
-    assert_page_cached :ok, 'head with ok status should have been cached'
+    assert_page_cached :ok, "head with ok status should have been cached"
   end
 
   def test_should_cache_get_with_ok_status
     get :ok
     assert_response :ok
-    assert_page_cached :ok, 'get with ok status should have been cached'
+    assert_page_cached :ok, "get with ok status should have been cached"
   end
 
   def test_should_cache_with_custom_path
@@ -199,24 +199,24 @@ class PageCachingTest < ActionController::TestCase
   end
 
   def test_should_cache_without_trailing_slash_on_url
-    @controller.class.cache_page 'cached content', '/page_caching_test/trailing_slash'
+    @controller.class.cache_page "cached content", "/page_caching_test/trailing_slash"
     assert File.exist?("#{FILE_STORE_PATH}/page_caching_test/trailing_slash.html")
   end
 
   def test_should_obey_http_accept_attribute
-    @request.env['HTTP_ACCEPT'] = 'text/xml'
+    @request.env["HTTP_ACCEPT"] = "text/xml"
     get :about_me
     assert File.exist?("#{FILE_STORE_PATH}/page_caching_test/about_me.xml")
-    assert_equal 'I am xml', @response.body
+    assert_equal "I am xml", @response.body
   end
 
   def test_cached_page_should_not_have_trailing_slash_even_if_url_has_trailing_slash
-    @controller.class.cache_page 'cached content', '/page_caching_test/trailing_slash/'
+    @controller.class.cache_page "cached content", "/page_caching_test/trailing_slash/"
     assert File.exist?("#{FILE_STORE_PATH}/page_caching_test/trailing_slash.html")
   end
 
   def test_should_cache_ok_at_custom_path
-    @request.env['PATH_INFO'] = '/index.html'
+    @request.env["PATH_INFO"] = "/index.html"
     get :ok
     assert_response :ok
     assert File.exist?("#{FILE_STORE_PATH}/index.html")
@@ -235,7 +235,7 @@ class PageCachingTest < ActionController::TestCase
   end
 
   def test_page_caching_conditional_options
-    get :ok, format: 'json'
+    get :ok, format: "json"
     assert_page_not_cached :ok
   end
 

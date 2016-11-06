@@ -1,6 +1,6 @@
-require 'abstract_unit'
-require 'active_support/log_subscriber/test_helper'
-require 'action_controller/log_subscriber'
+require "abstract_unit"
+require "active_support/log_subscriber/test_helper"
+require "action_controller/log_subscriber"
 
 module Another
   class LogSubscribersController < ActionController::Base
@@ -9,7 +9,7 @@ module Another
     self.perform_caching = true
 
     def with_page_cache
-      cache_page('Super soaker', '/index.html')
+      cache_page("Super soaker", "/index.html")
       render nothing: true
     end
   end
@@ -24,10 +24,10 @@ class ACLogSubscriberTest < ActionController::TestCase
 
     @routes = SharedTestRoutes
     @routes.draw do
-      get ':controller(/:action)'
+      get ":controller(/:action)"
     end
 
-    @cache_path = File.expand_path('../temp/test_cache', File.dirname(__FILE__))
+    @cache_path = File.expand_path("../temp/test_cache", File.dirname(__FILE__))
     ActionController::Base.page_cache_directory = @cache_path
     @controller.cache_store = :file_store, @cache_path
     ActionController::LogSubscriber.attach_to :action_controller
