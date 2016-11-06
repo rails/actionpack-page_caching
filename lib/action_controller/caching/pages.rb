@@ -120,7 +120,7 @@ module ActionController
             Zlib::BEST_COMPRESSION
           end
 
-          after_filter({only: actions}.merge(options)) do |c|
+          after_action({only: actions}.merge(options)) do |c|
             c.cache_page(nil, nil, gzip_level)
           end
         end

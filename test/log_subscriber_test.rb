@@ -10,7 +10,7 @@ module Another
 
     def with_page_cache
       cache_page('Super soaker', '/index.html')
-      render nothing: true
+      head :ok
     end
   end
 end
@@ -24,11 +24,15 @@ class ACLogSubscriberTest < ActionController::TestCase
 
     @routes = SharedTestRoutes
     @routes.draw do
-      get ':controller(/:action)'
+      get 'another/log_subscribers/with_page_cache' =>
+          'another/log_subscribers#with_page_cache'
     end
 
     @cache_path = File.expand_path('../temp/test_cache', File.dirname(__FILE__))
     ActionController::Base.page_cache_directory = @cache_path
+    if ActionController::Base.respond_to?(:enable_fragment_cache_logging=)
+      ActionController::Base.enable_fragment_cache_logging = true
+    end
     @controller.cache_store = :file_store, @cache_path
     ActionController::LogSubscriber.attach_to :action_controller
   end

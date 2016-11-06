@@ -1,5 +1,6 @@
 require 'abstract_unit'
 require 'mocha/setup'
+require 'rails/version'
 
 CACHE_DIR = 'test_cache'
 # Don't change '/../temp/' cavalierly or you might hose something you don't want hosed
@@ -8,6 +9,7 @@ FILE_STORE_PATH = File.join(File.dirname(__FILE__), '/../temp/', CACHE_DIR)
 class CachingMetalController < ActionController::Metal
   abstract!
 
+  include AbstractController::Callbacks
   include ActionController::Caching
 
   self.page_cache_directory = FILE_STORE_PATH
@@ -78,20 +80,20 @@ class PageCachingTestController < CachingController
   end
 
   def custom_path
-    render text: 'Super soaker'
+    render_text 'Super soaker'
     cache_page('Super soaker', '/index.html')
   end
 
   def default_gzip
-    render text: 'Text'
+    render_text 'Text'
   end
 
   def no_gzip
-    render text: 'PNG'
+    render_text 'PNG'
   end
 
   def gzip_level
-    render text: 'Big text'
+    render_text 'Big text'
   end
 
   def expire_custom_path
@@ -100,13 +102,21 @@ class PageCachingTestController < CachingController
   end
 
   def trailing_slash
-    render text: 'Sneak attack'
+    render_text 'Sneak attack'
   end
 
   def about_me
     respond_to do |format|
-      format.html { render text: 'I am html' }
-      format.xml  { render text: 'I am xml'  }
+      format.html { render_text 'I am html' }
+      format.xml  { render xml: 'I am xml'  }
+    end
+  end
+
+  def render_text(str)
+    if Rails::VERSION::MAJOR >= 5
+      render html: str
+    else
+      render text: str
     end
   end
 end
@@ -114,8 +124,12 @@ end
 class PageCachingTest < ActionController::TestCase
   def setup
     super
+    @request = if Rails::VERSION::MAJOR >= 5
+      ActionDispatch::TestRequest.create
+    else
+      ActionController::TestRequest.new
+    end
 
-    @request = ActionController::TestRequest.new
     @request.host = 'hostname.com'
     @request.env.delete('PATH_INFO')
 
@@ -123,7 +137,11 @@ class PageCachingTest < ActionController::TestCase
     @controller.perform_caching = true
     @controller.cache_store = :file_store, FILE_STORE_PATH
 
-    @response   = ActionController::TestResponse.new
+    @response = if Rails::VERSION::MAJOR >= 5
+      ActionDispatch::TestResponse.new
+    else
+      ActionController::TestResponse.new
+    end
 
     @params = { controller: 'posts', action: 'index', only_path: true }
 

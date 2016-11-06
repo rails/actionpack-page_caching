@@ -15,7 +15,19 @@ module ActionController
       @routes = SharedTestRoutes
 
       @routes.draw do
-        get ':controller(/:action)'
+        get 'page_caching_metal_test/ok' => 'page_caching_metal_test#ok'
+        scope controller: :page_caching_test, path: 'page_caching_test' do
+          get :about_me
+          get :custom_path
+          get :default_gzip
+          get :expire_custom_path
+          get :found
+          get :gzip_level
+          get :no_content
+          get :no_gzip
+          get :not_found
+          get :ok
+        end
       end
     end
   end
