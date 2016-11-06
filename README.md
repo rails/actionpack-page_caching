@@ -71,6 +71,10 @@ end
 Additionally, you can expire caches using [Sweepers](https://github.com/rails/rails-observers#action-controller-sweeper)
 that act on changes in the model to determine when a cache is supposed to be expired.
 
+Finally, configure your web server to serve these static pages when they are present
+rather than the original files. See the [project wiki][1] for example configurations.
+[1]: https://github.com/rails/actionpack-page_caching/wiki
+
 Contributing
 ------------
 
