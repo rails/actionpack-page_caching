@@ -1,20 +1,44 @@
 language: ruby
+sudo: false
+
+cache:
+  bundler: true
+
 before_install:
   - gem install bundler
+
 rvm:
   - 1.9.3
   - 2.0.0
-  - 2.1
+  - 2.1.8
+  - 2.2.5
   - 2.3.1
+
 gemfile:
   - Gemfile
   - gemfiles/Gemfile-4-0-stable
   - gemfiles/Gemfile-4-1-stable
   - gemfiles/Gemfile-4-2-stable
+  - gemfiles/Gemfile-5-0-stable
   - gemfiles/Gemfile-edge
+
 matrix:
   allow_failures:
     - gemfile: gemfiles/Gemfile-edge
+  exclude:
+    - rvm: 1.9.3
+      gemfile: gemfiles/Gemfile-5-0-stable
+    - rvm: 2.0.0
+      gemfile: gemfiles/Gemfile-5-0-stable
+    - rvm: 2.1.8
+      gemfile: gemfiles/Gemfile-5-0-stable
+    - rvm: 1.9.3
+      gemfile: gemfiles/Gemfile-edge
+    - rvm: 2.0.0
+      gemfile: gemfiles/Gemfile-edge
+    - rvm: 2.1.8
+      gemfile: gemfiles/Gemfile-edge
+
 notifications:
   email: false
   irc:
