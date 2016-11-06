@@ -35,7 +35,7 @@ where people log in and manipulate their own data are often less likely candidat
 First you need to set `page_cache_directory` in your configuration file:
 
 ```ruby
-config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/deploy"
+config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/cached_pages"
 ```
 
 Specifying which actions to cache is done through the `caches_page` class method:
