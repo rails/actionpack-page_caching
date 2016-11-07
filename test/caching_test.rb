@@ -8,6 +8,7 @@ FILE_STORE_PATH = File.join(File.dirname(__FILE__), "/../temp/", CACHE_DIR)
 class CachingMetalController < ActionController::Metal
   abstract!
 
+  include AbstractController::Callbacks
   include ActionController::Caching
 
   self.page_cache_directory = FILE_STORE_PATH
