@@ -92,20 +92,20 @@ class PageCachingTestController < CachingController
   end
 
   def custom_path
-    render text: "Super soaker"
+    render html: "Super soaker"
     cache_page("Super soaker", "/index.html")
   end
 
   def default_gzip
-    render text: "Text"
+    render html: "Text"
   end
 
   def no_gzip
-    render text: "PNG"
+    render html: "PNG"
   end
 
   def gzip_level
-    render text: "Big text"
+    render html: "Big text"
   end
 
   def expire_custom_path
@@ -114,13 +114,13 @@ class PageCachingTestController < CachingController
   end
 
   def trailing_slash
-    render text: "Sneak attack"
+    render html: "Sneak attack"
   end
 
   def about_me
     respond_to do |format|
-      format.html { render text: "I am html" }
-      format.xml  { render text: "I am xml"  }
+      format.html { render html: "I am html" }
+      format.xml  { render xml: "I am xml" }
     end
   end
 end
