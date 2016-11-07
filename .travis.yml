@@ -27,6 +27,12 @@ matrix:
     - gemfile: gemfiles/Gemfile-edge
   exclude:
     - rvm: 1.9.3
+      gemfile: Gemfile
+    - rvm: 2.0.0
+      gemfile: Gemfile
+    - rvm: 2.1.8
+      gemfile: Gemfile
+    - rvm: 1.9.3
       gemfile: gemfiles/Gemfile-5-0-stable
     - rvm: 2.0.0
       gemfile: gemfiles/Gemfile-5-0-stable
