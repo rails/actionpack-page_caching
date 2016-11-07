@@ -10,7 +10,7 @@ module Another
 
     def with_page_cache
       cache_page("Super soaker", "/index.html")
-      render nothing: true
+      head :ok
     end
   end
 end
