@@ -22,10 +22,7 @@ class ACLogSubscriberTest < ActionController::TestCase
   def setup
     super
 
-    @routes = SharedTestRoutes
-    @routes.draw do
-      get ":controller(/:action)"
-    end
+    @routes = ActionDispatch::Routing::RouteSet.new
 
     @cache_path = File.expand_path("../temp/test_cache", File.dirname(__FILE__))
     ActionController::Base.page_cache_directory = @cache_path
@@ -43,12 +40,18 @@ class ACLogSubscriberTest < ActionController::TestCase
   end
 
   def test_with_page_cache
-    get :with_page_cache
-    wait
+    with_routing do |set|
+      set.draw do
+        get "/with_page_cache", to: "another/log_subscribers#with_page_cache"
+      end
 
-    logs = @logger.logged(:info)
-    assert_equal 3, logs.size
-    assert_match(/Write page/, logs[1])
-    assert_match(/\/index\.html/, logs[1])
+      get :with_page_cache
+      wait
+
+      logs = @logger.logged(:info)
+      assert_equal 3, logs.size
+      assert_match(/Write page/, logs[1])
+      assert_match(/\/index\.html/, logs[1])
+    end
   end
 end
