@@ -2,8 +2,9 @@ require "abstract_unit"
 require "mocha/setup"
 
 CACHE_DIR = "test_cache"
-# Don't change "/../temp/" cavalierly or you might hose something you don't want hosed
-FILE_STORE_PATH = File.join(File.dirname(__FILE__), "/../temp/", CACHE_DIR)
+# Don't change "../tmp" cavalierly or you might hose something you don't want hosed
+TEST_TMP_DIR = File.expand_path("../tmp", __FILE__)
+FILE_STORE_PATH = File.join(TEST_TMP_DIR, CACHE_DIR)
 
 module PageCachingTestHelpers
   def setup
@@ -328,7 +329,7 @@ class PageCachingTest < ActionController::TestCase
       get "/page_caching_test/ok", to: "page_caching_test#ok"
     end
 
-    file_store_path = File.join(File.dirname(__FILE__), "/../temp/instance_cache")
+    file_store_path = File.join(TEST_TMP_DIR, "instance_cache")
     @controller.page_cache_directory = file_store_path
 
     get :ok

@@ -24,7 +24,7 @@ class ACLogSubscriberTest < ActionController::TestCase
 
     @routes = ActionDispatch::Routing::RouteSet.new
 
-    @cache_path = File.expand_path("../temp/test_cache", File.dirname(__FILE__))
+    @cache_path = File.expand_path("../tmp/test_cache", __FILE__)
     ActionController::Base.page_cache_directory = @cache_path
     @controller.cache_store = :file_store, @cache_path
     ActionController::LogSubscriber.attach_to :action_controller
