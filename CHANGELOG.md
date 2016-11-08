@@ -1,3 +1,5 @@
+* Add support for Rails 5.0 and master
+
 # 1.0.2
 
 * Fix load order problem with other gems.
