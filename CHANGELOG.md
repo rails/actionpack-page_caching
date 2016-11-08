@@ -1,3 +1,5 @@
+* Support instance level setting of `page_cache_directory`
+
 * Add support for Rails 5.0 and master
 
 # 1.0.2

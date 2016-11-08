@@ -323,4 +323,16 @@ class PageCachingTest < ActionController::TestCase
     end
   end
 
+  def test_page_caching_directory_set_on_controller_instance
+    draw do
+      get "/page_caching_test/ok", to: "page_caching_test#ok"
+    end
+
+    file_store_path = File.join(File.dirname(__FILE__), "/../temp/instance_cache")
+    @controller.page_cache_directory = file_store_path
+
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok, path: file_store_path
+  end
 end
