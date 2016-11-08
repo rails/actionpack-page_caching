@@ -8,7 +8,7 @@ Installation
 
 Add this line to your application's Gemfile:
 
-```ruby
+``` ruby
 gem "actionpack-page_caching"
 ```
 
@@ -34,13 +34,48 @@ where people log in and manipulate their own data are often less likely candidat
 
 First you need to set `page_cache_directory` in your configuration file:
 
-```ruby
+``` ruby
 config.action_controller.page_cache_directory = "#{Rails.root.to_s}/public/cached_pages"
+```
+
+The `page_cache_directory` setting can be used with a Proc:
+
+``` ruby
+class WeblogController < ApplicationController
+  self.page_cache_directory = -> { Rails.root.join("public", request.domain) }
+end
+```
+
+a Symbol:
+
+``` ruby
+class WeblogController < ApplicationController
+  self.page_cache_directory = :domain_cache_directory
+
+  private
+    def domain_cache_directory
+      Rails.root.join("public", request.domain)
+    end
+end
+```
+
+or a callable object:
+
+``` ruby
+class DomainCacheDirectory
+  def self.call(request)
+    Rails.root.join("public", request.domain)
+  end
+end
+
+class WeblogController < ApplicationController
+  self.page_cache_directory = DomainCacheDirectory
+end
 ```
 
 Specifying which actions to cache is done through the `caches_page` class method:
 
-```ruby
+``` ruby
 class WeblogController < ActionController::Base
   caches_page :show, :new
 end
@@ -58,7 +93,7 @@ in a lazy regeneration approach where the cache is not restored before another
 hit is made against it. The API for doing so mimics the options from `url_for`
 and friends:
 
-```ruby
+``` ruby
 class WeblogController < ActionController::Base
   def update
     List.update(params[:list][:id], params[:list])

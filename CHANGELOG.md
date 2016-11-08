@@ -1,3 +1,5 @@
+* Support dynamic `page_cache_directory` using a Proc, Symbol or callable
+
 * Support instance level setting of `page_cache_directory`
 
 * Add support for Rails 5.0 and master

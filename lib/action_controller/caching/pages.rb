@@ -1,6 +1,7 @@
 require "fileutils"
 require "uri"
 require "active_support/core_ext/class/attribute_accessors"
+require "active_support/core_ext/string/strip"
 
 module ActionController
   module Caching
@@ -62,9 +63,10 @@ module ActionController
       end
 
       class PageCache #:nodoc:
-        def initialize(cache_directory, default_extension)
+        def initialize(cache_directory, default_extension, controller = nil)
           @cache_directory = cache_directory
           @default_extension = default_extension
+          @controller = controller
         end
 
         def expire(path)
@@ -81,7 +83,57 @@ module ActionController
 
         private
           def cache_directory
-            @cache_directory.to_s
+            case @cache_directory
+            when Proc
+              handle_proc_cache_directory
+            when Symbol
+              handle_symbol_cache_directory
+            else
+              handle_default_cache_directory
+            end
+          end
+
+          def handle_proc_cache_directory
+            if @controller
+              @controller.instance_exec(&@cache_directory)
+            else
+              raise_runtime_error
+            end
+          end
+
+          def handle_symbol_cache_directory
+            if @controller
+              @controller.send(@cache_directory)
+            else
+              raise_runtime_error
+            end
+          end
+
+          def handle_callable_cache_directory
+            if @controller
+              @cache_directory.call(@controller.request)
+            else
+              raise_runtime_error
+            end
+          end
+
+          def handle_default_cache_directory
+            if @cache_directory.respond_to?(:call)
+              handle_callable_cache_directory
+            else
+              @cache_directory.to_s
+            end
+          end
+
+          def raise_runtime_error
+            raise RuntimeError, <<-MSG.strip_heredoc
+              Dynamic page_cache_directory used with class-level cache_page method
+
+              You have specified either a Proc, Symbol or callable object for page_cache_directory
+              which needs to be executed within the context of a request. If you need to call the
+              cache_page method from a class-level context then set the page_cache_directory to a
+              static value and override the setting at the instance-level using before_action.
+            MSG
           end
 
           def default_extension
@@ -175,8 +227,8 @@ module ActionController
                 Zlib::BEST_COMPRESSION
               end
 
-            after_action({ only: actions }.merge(options)) do
-              cache_page(nil, nil, gzip_level)
+            after_action({ only: actions }.merge(options)) do |c|
+              c.cache_page(nil, nil, gzip_level)
             end
           end
         end
@@ -241,7 +293,7 @@ module ActionController
 
       private
         def page_cache
-          PageCache.new(page_cache_directory, default_static_extension)
+          PageCache.new(page_cache_directory, default_static_extension, self)
         end
     end
   end

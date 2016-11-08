@@ -337,3 +337,167 @@ class PageCachingTest < ActionController::TestCase
     assert_page_cached :ok, path: file_store_path
   end
 end
+
+class ProcPageCachingTestController < CachingController
+  self.page_cache_directory = -> { File.join(TEST_TMP_DIR, request.domain) }
+
+  caches_page :ok
+
+  def ok
+    head :ok
+  end
+
+  def expire_ok
+    expire_page action: :ok
+    head :ok
+  end
+end
+
+class ProcPageCachingTest < ActionController::TestCase
+  include PageCachingTestHelpers
+  tests ProcPageCachingTestController
+
+  def test_page_is_cached_by_domain
+    draw do
+      get "/proc_page_caching_test/ok", to: "proc_page_caching_test#ok"
+      get "/proc_page_caching_test/ok/expire", to: "proc_page_caching_test#expire_ok"
+    end
+
+    @request.env["HTTP_HOST"] = "www.foo.com"
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok, path: TEST_TMP_DIR + "/foo.com"
+
+    get :expire_ok
+    assert_response :ok
+    assert_page_not_cached :ok, path: TEST_TMP_DIR + "/foo.com"
+
+    @request.env["HTTP_HOST"] = "www.bar.com"
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok, path: TEST_TMP_DIR + "/bar.com"
+
+    get :expire_ok
+    assert_response :ok
+    assert_page_not_cached :ok, path: TEST_TMP_DIR + "/bar.com"
+  end
+
+  def test_class_level_cache_page_raise_error
+    assert_raises(RuntimeError, /class-level cache_page method/) do
+      @controller.class.cache_page "cached content", "/proc_page_caching_test/ok"
+    end
+  end
+end
+
+class SymbolPageCachingTestController < CachingController
+  self.page_cache_directory = :domain_cache_directory
+
+  caches_page :ok
+
+  def ok
+    head :ok
+  end
+
+  def expire_ok
+    expire_page action: :ok
+    head :ok
+  end
+
+  protected
+    def domain_cache_directory
+      File.join(TEST_TMP_DIR, request.domain)
+    end
+end
+
+class SymbolPageCachingTest < ActionController::TestCase
+  include PageCachingTestHelpers
+  tests SymbolPageCachingTestController
+
+  def test_page_is_cached_by_domain
+    draw do
+      get "/symbol_page_caching_test/ok", to: "symbol_page_caching_test#ok"
+      get "/symbol_page_caching_test/ok/expire", to: "symbol_page_caching_test#expire_ok"
+    end
+
+    @request.env["HTTP_HOST"] = "www.foo.com"
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok, path: TEST_TMP_DIR + "/foo.com"
+
+    get :expire_ok
+    assert_response :ok
+    assert_page_not_cached :ok, path: TEST_TMP_DIR + "/foo.com"
+
+    @request.env["HTTP_HOST"] = "www.bar.com"
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok, path: TEST_TMP_DIR + "/bar.com"
+
+    get :expire_ok
+    assert_response :ok
+    assert_page_not_cached :ok, path: TEST_TMP_DIR + "/bar.com"
+  end
+
+  def test_class_level_cache_page_raise_error
+    assert_raises(RuntimeError, /class-level cache_page method/) do
+      @controller.class.cache_page "cached content", "/symbol_page_caching_test/ok"
+    end
+  end
+end
+
+class CallablePageCachingTestController < CachingController
+  class DomainCacheDirectory
+    def self.call(request)
+      File.join(TEST_TMP_DIR, request.domain)
+    end
+  end
+
+  self.page_cache_directory = DomainCacheDirectory
+
+  caches_page :ok
+
+  def ok
+    head :ok
+  end
+
+  def expire_ok
+    expire_page action: :ok
+    head :ok
+  end
+end
+
+class CallablePageCachingTest < ActionController::TestCase
+  include PageCachingTestHelpers
+  tests CallablePageCachingTestController
+
+  def test_page_is_cached_by_domain
+    draw do
+      get "/callable_page_caching_test/ok", to: "callable_page_caching_test#ok"
+      get "/callable_page_caching_test/ok/expire", to: "callable_page_caching_test#expire_ok"
+    end
+
+    @request.env["HTTP_HOST"] = "www.foo.com"
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok, path: TEST_TMP_DIR + "/foo.com"
+
+    get :expire_ok
+    assert_response :ok
+    assert_page_not_cached :ok, path: TEST_TMP_DIR + "/foo.com"
+
+    @request.env["HTTP_HOST"] = "www.bar.com"
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok, path: TEST_TMP_DIR + "/bar.com"
+
+    get :expire_ok
+    assert_response :ok
+    assert_page_not_cached :ok, path: TEST_TMP_DIR + "/bar.com"
+  end
+
+  def test_class_level_cache_page_raise_error
+    assert_raises(RuntimeError, /class-level cache_page method/) do
+      @controller.class.cache_page "cached content", "/callable_page_caching_test/ok"
+    end
+  end
+end
