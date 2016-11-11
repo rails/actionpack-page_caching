@@ -26,21 +26,31 @@ module PageCachingTestHelpers
   private
 
     def assert_page_cached(action, options = {})
-      message = options[:message] || "#{action} should have been cached"
-      assert page_cached?(action, options), message
+      expected = options[:content] || action.to_s
+      path = cache_file(action, options)
+
+      assert File.exist?(path), "The cache file #{path} doesn't exist"
+
+      if File.extname(path) == ".gz"
+        actual = Zlib::GzipReader.open(path) { |f| f.read }
+      else
+        actual = File.read(path)
+      end
+
+      assert_equal expected, actual, "The cached content doesn't match the expected value"
     end
 
     def assert_page_not_cached(action, options = {})
-      message = options[:message] || "#{action} should have been cached"
-      assert !page_cached?(action, options), message
+      path = cache_file(action, options)
+      assert !File.exist?(path), "The cache file #{path} still exists"
     end
 
-    def page_cached?(action, options = {})
+    def cache_file(action, options = {})
       path = options[:path] || FILE_STORE_PATH
-      format = options[:format] || "html"
       controller = options[:controller] || self.class.name.underscore
+      format = options[:format] || "html"
 
-      File.exist? "#{path}/#{controller}/#{action}.#{format}"
+      "#{path}/#{controller}/#{action}.#{format}"
     end
 
     def draw(&block)
@@ -102,7 +112,7 @@ class PageCachingTestController < CachingController
   caches_page :gzip_level, gzip: :best_speed
 
   def ok
-    head :ok
+    render html: "ok"
   end
 
   def no_content
@@ -118,20 +128,20 @@ class PageCachingTestController < CachingController
   end
 
   def custom_path
-    render html: "Super soaker"
-    cache_page("Super soaker", "/index.html")
+    render html: "custom_path"
+    cache_page(nil, "/index.html")
   end
 
   def default_gzip
-    render html: "Text"
+    render html: "default_gzip"
   end
 
   def no_gzip
-    render html: "PNG"
+    render html: "no_gzip"
   end
 
   def gzip_level
-    render html: "Big text"
+    render html: "gzip_level"
   end
 
   def expire_custom_path
@@ -140,7 +150,7 @@ class PageCachingTestController < CachingController
   end
 
   def trailing_slash
-    render html: "Sneak attack"
+    render html: "trailing_slash"
   end
 
   def about_me
@@ -174,7 +184,7 @@ class PageCachingTest < ActionController::TestCase
 
     head :ok
     assert_response :ok
-    assert_page_cached :ok, message: "head with ok status should have been cached"
+    assert_page_cached :ok
   end
 
   def test_should_cache_get_with_ok_status
@@ -184,7 +194,7 @@ class PageCachingTest < ActionController::TestCase
 
     get :ok
     assert_response :ok
-    assert_page_cached :ok, message: "get with ok status should have been cached"
+    assert_page_cached :ok
   end
 
   def test_should_cache_with_custom_path
@@ -193,7 +203,7 @@ class PageCachingTest < ActionController::TestCase
     end
 
     get :custom_path
-    assert_page_cached :index, controller: "."
+    assert_page_cached :index, controller: ".", content: "custom_path"
   end
 
   def test_should_expire_cache_with_custom_path
@@ -203,10 +213,10 @@ class PageCachingTest < ActionController::TestCase
     end
 
     get :custom_path
-    assert_page_cached :index, controller: "."
+    assert_page_cached :index, controller: ".", content: "custom_path"
 
     get :expire_custom_path
-    assert_page_not_cached :index, controller: "."
+    assert_page_not_cached :index, controller: ".", content: "custom_path"
   end
 
   def test_should_gzip_cache
@@ -216,7 +226,7 @@ class PageCachingTest < ActionController::TestCase
     end
 
     get :custom_path
-    assert_page_cached :index, controller: ".", format: "html.gz"
+    assert_page_cached :index, controller: ".", format: "html.gz", content: "custom_path"
 
     get :expire_custom_path
     assert_page_not_cached :index, controller: ".", format: "html.gz"
@@ -252,7 +262,7 @@ class PageCachingTest < ActionController::TestCase
 
   def test_should_cache_without_trailing_slash_on_url
     @controller.class.cache_page "cached content", "/page_caching_test/trailing_slash"
-    assert_page_cached :trailing_slash
+    assert_page_cached :trailing_slash, content: "cached content"
   end
 
   def test_should_obey_http_accept_attribute
@@ -263,12 +273,12 @@ class PageCachingTest < ActionController::TestCase
     @request.env["HTTP_ACCEPT"] = "text/xml"
     get :about_me
     assert_equal "I am xml", @response.body
-    assert_page_cached :about_me, format: "xml"
+    assert_page_cached :about_me, format: "xml", content: "I am xml"
   end
 
   def test_cached_page_should_not_have_trailing_slash_even_if_url_has_trailing_slash
     @controller.class.cache_page "cached content", "/page_caching_test/trailing_slash/"
-    assert_page_cached :trailing_slash
+    assert_page_cached :trailing_slash, content: "cached content"
   end
 
   def test_should_cache_ok_at_custom_path
@@ -279,7 +289,7 @@ class PageCachingTest < ActionController::TestCase
     @request.env["PATH_INFO"] = "/index.html"
     get :ok
     assert_response :ok
-    assert_page_cached :index, controller: "."
+    assert_page_cached :index, controller: ".", content: "ok"
   end
 
   [:ok, :no_content, :found, :not_found].each do |status|
@@ -293,7 +303,7 @@ class PageCachingTest < ActionController::TestCase
 
           send(method, status)
           assert_response status
-          assert_page_not_cached status, message: "#{method} with #{status} status shouldn't have been cached"
+          assert_page_not_cached status
         end
       end
     end
@@ -344,7 +354,7 @@ class ProcPageCachingTestController < CachingController
   caches_page :ok
 
   def ok
-    head :ok
+    render html: "ok"
   end
 
   def expire_ok
@@ -395,7 +405,7 @@ class SymbolPageCachingTestController < CachingController
   caches_page :ok
 
   def ok
-    head :ok
+    render html: "ok"
   end
 
   def expire_ok
@@ -457,7 +467,7 @@ class CallablePageCachingTestController < CachingController
   caches_page :ok
 
   def ok
-    head :ok
+    render html: "ok"
   end
 
   def expire_ok

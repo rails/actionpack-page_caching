@@ -279,7 +279,7 @@ module ActionController
             extension = ".#{type_symbol}"
           end
 
-          page_cache.cache(content, path, extension, gzip)
+          page_cache.cache(content || response.body, path, extension, gzip)
         end
       end
 
