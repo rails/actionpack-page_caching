@@ -99,6 +99,17 @@ class CachingController < ActionController::Base
   abstract!
 
   self.cache_store = :file_store, FILE_STORE_PATH
+
+  protected
+    if ActionPack::VERSION::STRING < "4.1"
+      def render(options)
+        if options.key?(:html)
+          super({ text: options.delete(:html) }.merge(options))
+        else
+          super
+        end
+      end
+    end
 end
 
 class PageCachingTestController < CachingController
