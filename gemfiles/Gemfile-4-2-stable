@@ -4,3 +4,7 @@ gemspec path: ".."
 
 gem "rails", github: "rails/rails", branch: "4-2-stable"
 gem "mime-types", "< 3"
+
+if RUBY_VERSION < "2.1"
+  gem "nokogiri", "< 1.7"
+end
