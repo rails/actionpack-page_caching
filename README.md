@@ -122,5 +122,5 @@ Contributing
 Code Status
 -----------
 
-* [![Build Status](https://travis-ci.org/rails/actionpack-page_caching.png?branch=master)](https://travis-ci.org/rails/page_caching)
-* [![Dependency Status](https://gemnasium.com/rails/actionpack-page_caching.png)](https://gemnasium.com/rails/actionpack-page_caching)
+* [![Build Status](https://travis-ci.org/rails/actionpack-page_caching.svg?branch=master)](https://travis-ci.org/rails/actionpack-page_caching)
+* [![Dependency Status](https://gemnasium.com/rails/actionpack-page_caching.svg)](https://gemnasium.com/rails/actionpack-page_caching)
