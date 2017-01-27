@@ -86,7 +86,8 @@ This will generate cache files such as `weblog/show/5.html` and
 dynamic page generation. Page caching works by configuring a web server to first
 check for the existence of files on disk, and to serve them directly when found,
 without passing the request through to Action Pack. This is much faster than
-handling the full dynamic request in the usual way.
+handling the full dynamic request in the usual way. 
+See examples for [Apache](http://stackoverflow.com/a/12943042/4061) and [nginx](http://www.rubytutorial.io/page-caching-with-rails4/).
 
 Expiration of the cache is handled by deleting the cached file, which results
 in a lazy regeneration approach where the cache is not restored before another
