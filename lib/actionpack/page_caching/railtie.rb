@@ -11,6 +11,7 @@ module ActionPack
 
       initializer "action_pack.page_caching.set_config", before: "action_controller.set_configs" do |app|
         app.config.action_controller.page_cache_directory ||= app.config.paths["public"].first
+        app.config.action_controller.page_cache_with_query_string ||= false
       end
     end
   end

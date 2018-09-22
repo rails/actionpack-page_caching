@@ -25,10 +25,9 @@ module PageCachingTestHelpers
 
   private
 
-    def assert_page_cached(action, options = {})
+    def assert_page_cached(action, options = {}, query_string = nil)
       expected = options[:content] || action.to_s
-      path = cache_file(action, options)
-
+      path = cache_file(action, options, query_string)
       assert File.exist?(path), "The cache file #{path} doesn't exist"
 
       if File.extname(path) == ".gz"
@@ -40,17 +39,18 @@ module PageCachingTestHelpers
       assert_equal expected, actual, "The cached content doesn't match the expected value"
     end
 
-    def assert_page_not_cached(action, options = {})
-      path = cache_file(action, options)
+    def assert_page_not_cached(action, options = {}, query_string = nil)
+      path = cache_file(action, options, query_string)
       assert !File.exist?(path), "The cache file #{path} still exists"
     end
 
-    def cache_file(action, options = {})
+    def cache_file(action, options = {}, query_string = nil)
       path = options[:path] || FILE_STORE_PATH
       controller = options[:controller] || self.class.name.underscore
       format = options[:format] || "html"
+      query = query_string.present? ? "?#{query_string}" : ''
 
-      "#{path}/#{controller}/#{action}.#{format}"
+      "#{path}/#{controller}/#{action}.#{format}#{query}"
     end
 
     def draw(&block)
@@ -258,7 +258,7 @@ class PageCachingTest < ActionController::TestCase
       get "/page_caching_test/default_gzip", to: "page_caching_test#default_gzip"
     end
 
-    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_COMPRESSION)
+    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_COMPRESSION, false)
     get :default_gzip
   end
 
@@ -267,7 +267,7 @@ class PageCachingTest < ActionController::TestCase
       get "/page_caching_test/gzip_level", to: "page_caching_test#gzip_level"
     end
 
-    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_SPEED)
+    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_SPEED, false)
     get :gzip_level
   end
 
@@ -520,5 +520,125 @@ class CallablePageCachingTest < ActionController::TestCase
     assert_raises(RuntimeError, /class-level cache_page method/) do
       @controller.class.cache_page "cached content", "/callable_page_caching_test/ok"
     end
+  end
+end
+
+class WithQueryPageCachingSetTestController < CachingController
+  self.page_cache_with_query_string = true
+
+  caches_page :default
+  caches_page :without_query, with_query_string: false
+
+  def default
+    render html: "default"
+  end
+
+  def without_query
+    render html: "without_query"
+  end
+
+  def expire_default
+    expire_page action: :default
+    head :ok
+  end
+end
+
+class WithQueryPageCachingSetTest < ActionController::TestCase
+  include PageCachingTestHelpers
+  tests WithQueryPageCachingSetTestController
+
+  def test_cached_file_name_includes_query_string
+    draw do
+      get "/with_query_page_caching_set_test/default", to: "with_query_page_caching_set_test#default"
+    end
+    get :default, params: {variant: '1', with: 'data'}
+    assert_page_cached :default, {}, 'variant=1&with=data'
+    assert_page_not_cached :default
+  end
+
+  def test_request_without_query_generates_cache_file_name_without_query
+    draw do
+      get "/with_query_page_caching_set_test/default", to: "with_query_page_caching_set_test#default"
+    end
+    get :default
+    assert_page_cached :default
+  end
+
+  def test_should_cache_one_file_per_query_variant
+    draw do
+      get "/with_query_page_caching_set_test/default", to: "with_query_page_caching_set_test#default"
+    end
+
+    get :default, params: {variant: '1'}
+    get :default, params: {variant: '2'}
+    assert_page_cached :default, {}, 'variant=1'
+    assert_page_cached :default, {}, 'variant=2'
+  end
+
+  def test_inline_option_takes_over_controller_setting
+    draw do
+      get "/with_query_page_caching_set_test/without_query", to: "with_query_page_caching_set_test#without_query"
+    end
+
+    get :without_query, params: {variant: '1', with: 'data'}
+    assert_page_not_cached :without_query, {}, 'variant=1&with=data'
+    assert_page_cached :without_query
+  end
+
+  def test_should_expire_all_query_variants
+    draw do
+      get "/with_query_page_caching_set_test/default", to: "with_query_page_caching_set_test#default"
+      get "/with_query_page_caching_set_test/expire_default", to: "with_query_page_caching_set_test#expire_default"
+    end
+
+    get :default
+    get :default, params: {variant: '1'}
+    get :default, params: {variant: '2'}
+    assert_page_cached :default
+    assert_page_cached :default, {}, 'variant=1'
+    assert_page_cached :default, {}, 'variant=2'
+
+    get :expire_default
+    assert_page_not_cached :default
+    assert_page_not_cached :default, {}, 'variant=1'
+    assert_page_not_cached :default, {}, 'variant=2'
+  end
+end
+
+class WithQueryPageCachingNotSetTestController < CachingController
+  caches_page :default
+  caches_page :with_query, with_query_string: true
+
+  def default
+    render html: "default"
+  end
+
+  def with_query
+    render html: "with_query"
+  end
+end
+
+class WithQueryPageCachingNotSetTest < ActionController::TestCase
+  include PageCachingTestHelpers
+  tests WithQueryPageCachingNotSetTestController
+
+  def test_ignore_query_string_by_default
+    draw do
+      get "/with_query_page_caching_not_set_test/default", to: "with_query_page_caching_not_set_test#default"
+    end
+
+    get :default, params: {variant: '1', with: 'data'}
+    assert_page_not_cached :default, {}, 'variant=1&with=data'
+    assert_page_cached :default
+  end
+
+  def test_with_query_string_option_enabled
+    draw do
+      get "/with_query_page_caching_not_set_test/with_query", to: "with_query_page_caching_not_set_test#with_query"
+    end
+
+    get :with_query, params: {variant: '1', with: 'data'}
+    assert_page_not_cached :with_query
+    assert_page_cached :with_query, {}, 'variant=1&with=data'
   end
 end
