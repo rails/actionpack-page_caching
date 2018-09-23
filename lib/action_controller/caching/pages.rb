@@ -60,6 +60,11 @@ module ActionController
         # or <tt>:best_speed</tt> or an integer configuring the compression level.
         class_attribute :page_cache_compression
         self.page_cache_compression ||= false
+
+        # Set to +true+ to generate one cache file for each query string variant.
+        # Default is +false+.
+        class_attribute :page_cache_with_query_string
+        self.page_cache_with_query_string ||= false
       end
 
       class PageCache #:nodoc:
@@ -75,9 +80,9 @@ module ActionController
           end
         end
 
-        def cache(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION)
+        def cache(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION, query_string = nil)
           instrument :write_page, path do
-            write(content, cache_path(path, extension), gzip)
+            write(content, cache_path(path, extension, query_string), gzip)
           end
         end
 
@@ -140,7 +145,7 @@ module ActionController
             @default_extension
           end
 
-          def cache_file(path, extension)
+          def cache_file(path, extension, query_string)
             if path.empty? || path == "/"
               name = "/index"
             else
@@ -148,19 +153,26 @@ module ActionController
             end
 
             if File.extname(name).empty?
-              name + (extension || default_extension)
+              name += (extension || default_extension)
+            end
+
+            if query_string.present?
+              name + '?' + query_string
             else
               name
             end
           end
 
-          def cache_path(path, extension = nil)
-            File.join(cache_directory, cache_file(path, extension))
+          def cache_path(path, extension = nil, query_string = nil)
+            File.join(cache_directory, cache_file(path, extension, query_string))
           end
 
           def delete(path)
             File.delete(path) if File.exist?(path)
             File.delete(path + ".gz") if File.exist?(path + ".gz")
+            Dir.glob(path + '\?*').each do |file|
+              File.delete(file)
+            end
           end
 
           def write(content, path, gzip)
@@ -190,9 +202,9 @@ module ActionController
         # Manually cache the +content+ in the key determined by +path+.
         #
         #   cache_page "I'm the cached content", "/lists/show"
-        def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION)
+        def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION, query_string = nil)
           if perform_caching
-            page_cache.cache(content, path, extension, gzip)
+            page_cache.cache(content, path, extension, gzip, query_string)
           end
         end
 
@@ -200,7 +212,8 @@ module ActionController
         # the cache in a path within the +page_cache_directory+ that
         # matches the triggering url.
         #
-        # You can also pass a <tt>:gzip</tt> option to override the class configuration one.
+        # You can also pass a <tt>:gzip</tt> and a a <tt>:with_query_string</tt>
+        # option to override the class configuration.
         #
         #   # cache the index action
         #   caches_page :index
@@ -210,6 +223,9 @@ module ActionController
         #
         #   # don't gzip images
         #   caches_page :image, gzip: false
+        #
+        #   # disable cache file per query string for this action
+        #   caches_page :image, with_query_string: false
         def caches_page(*actions)
           if perform_caching
             options = actions.extract_options!
@@ -227,8 +243,10 @@ module ActionController
                 Zlib::BEST_COMPRESSION
               end
 
+            with_query_string = options.fetch(:with_query_string, page_cache_with_query_string)
+
             after_action({ only: actions }.merge(options)) do |c|
-              c.cache_page(nil, nil, gzip_level)
+              c.cache_page(nil, nil, gzip_level, with_query_string)
             end
           end
         end
@@ -263,7 +281,7 @@ module ActionController
       # request being handled is used.
       #
       #   cache_page "I'm the cached content", controller: "lists", action: "show"
-      def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION)
+      def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION, with_query_string = false)
         if perform_caching? && caching_allowed?
           path = \
             case options
@@ -279,7 +297,12 @@ module ActionController
             extension = ".#{type_symbol}"
           end
 
-          page_cache.cache(content || response.body, path, extension, gzip)
+          query_string = \
+            if with_query_string
+              request.query_string
+            end
+
+          page_cache.cache(content || response.body, path, extension, gzip, query_string)
         end
       end
 
