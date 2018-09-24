@@ -141,7 +141,7 @@ module ActionController
           end
 
           def cache_file(path, extension)
-            if path.empty? || path == "/"
+            if path.empty? || path =~ %r{\A/+\z}
               name = "/index"
             else
               name = URI.parser.unescape(path.chomp("/"))
