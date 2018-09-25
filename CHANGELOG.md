@@ -1,4 +1,4 @@
-## Unreleased
+## 1.1.1 (September 25, 2018)
 
 *   Fixes handling of several forward slashes as root path.
 
@@ -7,6 +7,7 @@
 *   Documentation overhaul.
 
     *Xavier Noria*
+
 
 ## 1.1.0 (January 23, 2017)
 
