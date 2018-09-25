@@ -11,6 +11,9 @@ files that the web server can serve directly:
 2. Its response is calculated and stored in a file _F_.
 3. Next time _E_ is requested, the web server sends _F_ directly.
 
+That applies only to GET or HEAD requests whose reponse code is 200, the rest
+are ignored.
+
 Unlike caching proxies or other more sophisticated setups, page caching results
 in a dramatic speed up while being dead simple at the same time. Awesome
 cost/benefit.
@@ -23,10 +26,9 @@ This technique, however, is only suitable for pages that do not need to go
 through your Rails stack, precisely. For example, content management systems
 like wikis have typically many pages that are a great fit for this approach, but
 account-based systems where people log in and manipulate their own data are
-often less likely candidates. As a use case you can check, the [application that
-gives credit to contributors to Ruby on
-Rails](https://contributors.rubyonrails.org/) makes heavy use of page caching.
-Its source code is [here](https://github.com/rails/rails-contributors).
+often less likely candidates. As a use case you can check, [Rails
+Contributors](https://contributors.rubyonrails.org/) makes heavy use of page
+caching. Its source code is [here](https://github.com/rails/rails-contributors).
 
 It is not all or nothing, though, in HTML cached pages JavaScript can still
 tweak details here and there dynamically as a trade-off.
