@@ -1,3 +1,13 @@
+## Unreleased
+
+*   Fixes handling of several forward slashes as root path.
+
+    *Xavier Noria*
+
+*   Documentation overhaul.
+
+    *Xavier Noria*
+
 ## 1.1.0 (January 23, 2017)
 
 *   Support dynamic `page_cache_directory` using a Proc, Symbol or callable
