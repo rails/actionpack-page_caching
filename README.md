@@ -11,7 +11,7 @@ files that the web server can serve directly:
 2. Its response is calculated and stored in a file _F_.
 3. Next time _E_ is requested, the web server sends _F_ directly.
 
-That applies only to GET or HEAD requests whose reponse code is 200, the rest
+That applies only to GET or HEAD requests whose response code is 200, the rest
 are ignored.
 
 Unlike caching proxies or other more sophisticated setups, page caching results
