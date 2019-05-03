@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "fileutils"
 require "uri"
 require "active_support/core_ext/class/attribute_accessors"
@@ -5,6 +7,8 @@ require "active_support/core_ext/string/strip"
 
 module ActionController
   module Caching
+    COMPRESSIONS_DEFAULTS = {gzip: 9, brotli: 9} # ::Zlib::BEST_COMPRESSION
+
     # Page caching is an approach to caching where the entire action output of is
     # stored as a HTML file that the web server can serve without going through
     # Action Pack. This is the fastest way to cache your content as opposed to going
@@ -60,6 +64,9 @@ module ActionController
         # or <tt>:best_speed</tt> or an integer configuring the compression level.
         class_attribute :page_cache_compression
         self.page_cache_compression ||= false
+
+        class_attribute :page_cache_compressions
+        self.page_cache_compressions ||= COMPRESSIONS_DEFAULTS
       end
 
       class PageCache #:nodoc:
@@ -75,9 +82,9 @@ module ActionController
           end
         end
 
-        def cache(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION)
+        def cache(content, path, extension = nil, compressions: COMPRESSIONS_DEFAULTS)
           instrument :write_page, path do
-            write(content, cache_path(path, extension), gzip)
+            write(content, cache_path(path, extension), compressions: compressions)
           end
         end
 
@@ -168,16 +175,22 @@ module ActionController
 
             File.delete(path) if File.exist?(path)
             File.delete(path + ".gz") if File.exist?(path + ".gz")
+            File.delete(path + ".br") if File.exist?(path + ".br")
           end
 
-          def write(content, path, gzip)
+          def write(content, path, compressions:)
             return unless path
 
             FileUtils.makedirs(File.dirname(path))
             File.open(path, "wb+") { |f| f.write(content) }
 
-            if gzip
-              Zlib::GzipWriter.open(path + ".gz", gzip) { |f| f.write(content) }
+            if compressions[:gzip]
+              Zlib::GzipWriter.open(path + ".gz", compressions[:gzip]) { |f| f.write(content) }
+            end
+
+            if compressions[:brotli]
+              brotli = ::Brotli.deflate(content, mode: :text, quality: compressions[:brotli])
+              File.atomic_write(path + ".br") { |f| f.write(brotli) }
             end
           end
 
@@ -199,9 +212,9 @@ module ActionController
         # Manually cache the +content+ in the key determined by +path+.
         #
         #   cache_page "I'm the cached content", "/lists/show"
-        def cache_page(content, path, extension = nil, gzip = Zlib::BEST_COMPRESSION)
+        def cache_page(content, path, extension = nil, compressions: COMPRESSIONS_DEFAULTS)
           if perform_caching
-            page_cache.cache(content, path, extension, gzip)
+            page_cache.cache(content, path, extension, compressions: compressions)
           end
         end
 
@@ -218,26 +231,50 @@ module ActionController
         #   caches_page :index, if: Proc.new { !request.format.json? }
         #
         #   # don't gzip images
-        #   caches_page :image, gzip: false
+        #   caches_page :image, compressions: false
         def caches_page(*actions)
           if perform_caching
             options = actions.extract_options!
 
-            gzip_level = options.fetch(:gzip, page_cache_compression)
-            gzip_level = \
-              case gzip_level
-              when Symbol
-                Zlib.const_get(gzip_level.upcase)
-              when Integer
-                gzip_level
+            compressions = options.fetch(:compressions, page_cache_compressions)
+
+            compressions =
+              case compressions
               when false
-                nil
+                {}
               else
-                Zlib::BEST_COMPRESSION
+                compressions
               end
 
+            if options.key?(:gzip)
+              ActiveSupport::Deprecation.warn(
+                "actionpack-page-caching now support brotli compression.\n
+                Using gzip directly is deprecated. instead of\n caches_page :index, gzip: Zlib::BEST_COMPRESSION \n
+                please use\n caches_page :index, compressions: {gzip: Zlib::BEST_COMPRESSION, brotli: 9}"
+              )
+
+              gzip_level = options.fetch(:gzip, page_cache_compression)
+              gzip_level = \
+                case gzip_level
+                when Symbol
+                  Zlib.const_get(gzip_level.upcase)
+                when Integer
+                  gzip_level
+                when false
+                  nil
+                else
+                  Zlib::BEST_COMPRESSION
+                end
+
+              compressions[:gzip] = gzip_level
+            end
+
+            if compressions.key?(:brotli)
+              require 'brotli'
+            end
+
             after_action({ only: actions }.merge(options)) do |c|
-              c.cache_page(nil, nil, gzip_level)
+              c.cache_page(nil, nil, compressions: compressions)
             end
           end
         end
@@ -272,7 +309,7 @@ module ActionController
       # request being handled is used.
       #
       #   cache_page "I'm the cached content", controller: "lists", action: "show"
-      def cache_page(content = nil, options = nil, gzip = Zlib::BEST_COMPRESSION)
+      def cache_page(content = nil, options = nil, compressions: COMPRESSIONS_DEFAULTS)
         if perform_caching? && caching_allowed?
           path = \
             case options
@@ -294,7 +331,7 @@ module ActionController
             extension = ".#{type_symbol}"
           end
 
-          page_cache.cache(content || response.body, path, extension, gzip)
+          page_cache.cache(content || response.body, path, extension, compressions: compressions)
         end
       end
 

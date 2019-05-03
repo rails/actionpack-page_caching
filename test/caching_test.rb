@@ -119,9 +119,11 @@ class PageCachingTestController < CachingController
   caches_page :ok, :no_content, if: Proc.new { |c| !c.request.format.json? }
   caches_page :found, :not_found
   caches_page :about_me
-  caches_page :default_gzip
-  caches_page :no_gzip, gzip: false
-  caches_page :gzip_level, gzip: :best_speed
+  caches_page :default_compressions
+  caches_page :no_gzip, compressions: {gzip: false}
+  caches_page :gzip_level, compressions: {gzip: 1}
+  caches_page :no_brotli, compressions: {brotli: false}
+  caches_page :brotli_level, compressions: {brotli: 1}
 
   def ok
     render html: "ok"
@@ -144,8 +146,8 @@ class PageCachingTestController < CachingController
     cache_page(nil, "/index.html")
   end
 
-  def default_gzip
-    render html: "default_gzip"
+  def default_compressions
+    render html: "default_compressions"
   end
 
   def no_gzip
@@ -154,6 +156,14 @@ class PageCachingTestController < CachingController
 
   def gzip_level
     render html: "gzip_level"
+  end
+
+  def no_brotli
+    render html: "no_brotli"
+  end
+
+  def brotli_level
+    render html: "brotli_level"
   end
 
   def expire_custom_path
@@ -261,6 +271,7 @@ class PageCachingTest < ActionController::TestCase
 
     get :expire_custom_path
     assert_page_not_cached :index, controller: ".", format: "html.gz"
+    assert_page_not_cached :index, controller: ".", format: "html.br"
   end
 
   def test_should_allow_to_disable_gzip
@@ -273,13 +284,23 @@ class PageCachingTest < ActionController::TestCase
     assert_page_not_cached :no_gzip, format: "html.gz"
   end
 
-  def test_should_use_config_gzip_by_default
+  def test_should_allow_to_disable_brotli
     draw do
-      get "/page_caching_test/default_gzip", to: "page_caching_test#default_gzip"
+      get "/page_caching_test/no_brotli", to: "page_caching_test#no_brotli"
     end
 
-    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_COMPRESSION)
-    get :default_gzip
+    get :no_brotli
+    assert_page_cached :no_brotli, format: "html"
+    assert_page_not_cached :no_brotli, format: "html.br"
+  end
+
+  def test_should_use_config_compressions_by_default
+    draw do
+      get "/page_caching_test/default_compressions", to: "page_caching_test#default_compressions"
+    end
+
+    @controller.expects(:cache_page).with(nil, nil, compressions: {gzip: Zlib::BEST_COMPRESSION, brotli: 9})
+    get :default_compressions
   end
 
   def test_should_set_gzip_level
@@ -287,8 +308,17 @@ class PageCachingTest < ActionController::TestCase
       get "/page_caching_test/gzip_level", to: "page_caching_test#gzip_level"
     end
 
-    @controller.expects(:cache_page).with(nil, nil, Zlib::BEST_SPEED)
+    @controller.expects(:cache_page).with(nil, nil, compressions: {gzip: Zlib::BEST_SPEED})
     get :gzip_level
+  end
+
+  def test_should_set_brotli_level
+    draw do
+      get "/page_caching_test/brotli_level", to: "page_caching_test#brotli_level"
+    end
+
+    @controller.expects(:cache_page).with(nil, nil, compressions: {brotli: 1})
+    get :brotli_level
   end
 
   def test_should_cache_without_trailing_slash_on_url

@@ -5,7 +5,9 @@ cache:
   bundler: true
 
 before_install:
-  - gem install bundler
+  - "travis_retry gem update --system 2.7.9"
+  - "travis_retry gem install bundler -v '1.17.3'"
+  - "travis_retry gem install brotli"
 
 rvm:
   - 2.4.6
