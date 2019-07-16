@@ -15,7 +15,6 @@ rvm:
 
 gemfile:
   - Gemfile
-  - gemfiles/Gemfile-4-2-stable
   - gemfiles/Gemfile-5-0-stable
   - gemfiles/Gemfile-5-1-stable
   - gemfiles/Gemfile-5-2-stable
@@ -30,8 +29,6 @@ matrix:
       gemfile: gemfiles/Gemfile-6-0-stable
     - rvm: 2.4.6
       gemfile: gemfiles/Gemfile-edge
-    - rvm: 2.6.3
-      gemfile: gemfiles/Gemfile-4-2-stable
 
 notifications:
   email: false
