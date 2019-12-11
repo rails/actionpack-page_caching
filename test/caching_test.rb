@@ -24,7 +24,6 @@ module PageCachingTestHelpers
   end
 
   private
-
     def assert_page_cached(action, options = {})
       expected = options[:content] || action.to_s
       path = cache_file(action, options)
@@ -330,19 +329,17 @@ class PageCachingTest < ActionController::TestCase
   end
 
   def test_page_caching_directory_set_as_pathname
-    begin
-      ActionController::Base.page_cache_directory = Pathname.new(FILE_STORE_PATH)
+    ActionController::Base.page_cache_directory = Pathname.new(FILE_STORE_PATH)
 
-      draw do
-        get "/page_caching_test/ok", to: "page_caching_test#ok"
-      end
-
-      get :ok
-      assert_response :ok
-      assert_page_cached :ok
-    ensure
-      ActionController::Base.page_cache_directory = FILE_STORE_PATH
+    draw do
+      get "/page_caching_test/ok", to: "page_caching_test#ok"
     end
+
+    get :ok
+    assert_response :ok
+    assert_page_cached :ok
+  ensure
+    ActionController::Base.page_cache_directory = FILE_STORE_PATH
   end
 
   def test_page_caching_directory_set_on_controller_instance

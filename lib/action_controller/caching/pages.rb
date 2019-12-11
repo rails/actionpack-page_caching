@@ -136,9 +136,7 @@ module ActionController
             MSG
           end
 
-          def default_extension
-            @default_extension
-          end
+          attr_reader :default_extension
 
           def cache_file(path, extension)
             if path.empty? || path =~ %r{\A/+\z}
@@ -276,10 +274,10 @@ module ActionController
             end
 
           type = if self.respond_to?(:media_type)
-                   Mime::LOOKUP[self.media_type]
-                 else
-                   Mime::LOOKUP[self.content_type]
-                 end
+            Mime::LOOKUP[self.media_type]
+          else
+            Mime::LOOKUP[self.content_type]
+          end
 
           if type && (type_symbol = type.symbol).present?
             extension = ".#{type_symbol}"
