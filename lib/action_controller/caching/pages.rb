@@ -93,6 +93,10 @@ module ActionController
             end
           end
 
+          def normalized_cache_directory
+            File.expand_path(cache_directory)
+          end
+
           def handle_proc_cache_directory
             if @controller
               @controller.instance_exec(&@cache_directory)
@@ -153,15 +157,22 @@ module ActionController
           end
 
           def cache_path(path, extension = nil)
-            File.join(cache_directory, cache_file(path, extension))
+            unnormalized_path = File.join(normalized_cache_directory, cache_file(path, extension))
+            normalized_path = File.expand_path(unnormalized_path)
+
+            relative_path if normalized_path.start_with?(normalized_cache_directory)
           end
 
           def delete(path)
+            return unless path
+
             File.delete(path) if File.exist?(path)
             File.delete(path + ".gz") if File.exist?(path + ".gz")
           end
 
           def write(content, path, gzip)
+            return unless path
+
             FileUtils.makedirs(File.dirname(path))
             File.open(path, "wb+") { |f| f.write(content) }
 

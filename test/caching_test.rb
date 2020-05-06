@@ -1,10 +1,12 @@
 require "abstract_unit"
 require "mocha/setup"
+require "find"
 
 CACHE_DIR = "test_cache"
 # Don't change "../tmp" cavalierly or you might hose something you don't want hosed
 TEST_TMP_DIR = File.expand_path("../tmp", __FILE__)
 FILE_STORE_PATH = File.join(TEST_TMP_DIR, CACHE_DIR)
+
 
 module PageCachingTestHelpers
   def setup
@@ -174,6 +176,25 @@ end
 class PageCachingTest < ActionController::TestCase
   include PageCachingTestHelpers
   tests PageCachingTestController
+
+  def test_cache_does_not_escape
+    draw do
+      get "/page_caching_test/ok/:id", to: "page_caching_test#ok"
+    end
+
+    project_root = File.expand_path("../../", __FILE__)
+
+
+    # Make a path that escapes the cache directory
+    get_to_root = "../../../"
+
+    # Make sure this relative path points at the project root
+    assert_equal project_root, File.expand_path(File.join(FILE_STORE_PATH, get_to_root))
+
+    get :ok, params: { id: "#{get_to_root}../pwnd" }
+
+    assert_predicate Find.find(File.join(project_root, "test")).grep(/pwnd/), :empty?
+  end
 
   def test_page_caching_resources_saves_to_correct_path_with_extension_even_if_default_route
     draw do
