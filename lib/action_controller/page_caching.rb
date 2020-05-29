@@ -2,6 +2,8 @@ require "action_controller/caching/pages"
 
 module ActionController
   module Caching
+    extend ActiveSupport::Autoload
+
     eager_autoload do
       autoload :Pages
     end
