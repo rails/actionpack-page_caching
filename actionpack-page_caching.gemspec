@@ -17,5 +17,8 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency "actionpack", ">= 5.0.0"
 
+  gem.add_development_dependency 'brotli', '>= 0.2.0'
   gem.add_development_dependency "mocha"
+
+  gem.post_install_message = "To use brotli compression you have to manually add gem 'brotli' to Gemfile"
 end

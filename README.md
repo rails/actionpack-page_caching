@@ -200,6 +200,37 @@ Additionally, you can expire caches using
 that act on changes in the model to determine when a cache is supposed to be
 expired.
 
+#### Compression Algorithm
+
+To use brotli manually install gem 'brotli' inside Gemfile
+``` ruby
+  gem 'brotli'
+```
+
+To use both gzip and brotli, or just skip compressions, because this is default value
+
+``` ruby
+class WeblogController < ActionController::Base
+  caches_page :show, :new, compressions: {gzip: Zlib::BEST_COMPRESSION, brotli: 9}
+end
+```
+
+To use only gzip
+
+``` ruby
+class WeblogController < ActionController::Base
+  caches_page :show, :new, compressions: {gzip: Zlib::BEST_COMPRESSION}
+end
+```
+
+To use only brotli
+
+``` ruby
+class WeblogController < ActionController::Base
+  caches_page :show, :new, compressions: {brotli: 9}
+end
+```
+
 Contributing
 ------------
 

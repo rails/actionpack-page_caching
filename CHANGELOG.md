@@ -1,3 +1,9 @@
+## 1.2.4 Unreleased
+
+*   Allow to use brotli compression
+
+    *Anton Kolodii*
+
 ## 1.1.1 (September 25, 2018)
 
 *   Fixes handling of several forward slashes as root path.
