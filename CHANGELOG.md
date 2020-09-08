@@ -1,6 +1,6 @@
 ## 1.2.3 (June 12, 2020)
 
-- Simplifies code in page_caching.rb due to explicit require
+- Simplifies code in `page_caching.rb`
 
   _Xavier Noria_
 
@@ -18,11 +18,11 @@
 
 ## 1.2.0 (December 11, 2019)
 
-- Update Rubocop config
+- Update RuboCop config
 
   _Rafael Mendonça França_
 
-- Fix for Rails 6 Mime lookups
+- Fix for Rails 6 MIME lookups
 
   _Rob Zolkos_
 
@@ -34,17 +34,17 @@
 
   _Rob Zolkos_
 
-- Remove upper dependency for actionpack
+- Remove upper dependency for `actionpack`
 
   _Anton Kolodii_
 
 ## 1.1.1 (September 25, 2018)
 
-- Fixes handling of several forward slashes as root path.
+- Fixes handling of several forward slashes as root path
 
   _Xavier Noria_
 
-- Documentation overhaul.
+- Documentation overhaul
 
   _Xavier Noria_
 
