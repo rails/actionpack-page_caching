@@ -1,5 +1,5 @@
 require "abstract_unit"
-require "mocha/setup"
+require "mocha/minitest"
 require "find"
 
 CACHE_DIR = "test_cache"
