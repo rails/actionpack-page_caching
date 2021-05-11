@@ -1,3 +1,4 @@
+require "rails/version"
 require "abstract_unit"
 require "mocha/minitest"
 require "find"
@@ -184,14 +185,17 @@ class PageCachingTest < ActionController::TestCase
 
     project_root = File.expand_path("../../", __FILE__)
 
-
     # Make a path that escapes the cache directory
     get_to_root = "../../../"
 
     # Make sure this relative path points at the project root
     assert_equal project_root, File.expand_path(File.join(FILE_STORE_PATH, get_to_root))
 
-    get :ok, params: { id: "#{get_to_root}../pwnd" }
+    if Rails.version =~ /^4\./
+      get :ok, id: "#{get_to_root}../pwnd"
+    else
+      get :ok, params: { id: "#{get_to_root}../pwnd" }
+    end
 
     assert_predicate Find.find(File.join(project_root, "test")).grep(/pwnd/), :empty?
   end

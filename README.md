@@ -212,4 +212,4 @@ Contributing
 Code Status
 -----------
 
-* [![Build Status](https://travis-ci.org/rails/actionpack-page_caching.svg?branch=master)](https://travis-ci.org/rails/actionpack-page_caching)
+* [![Build Status](https://github.com/rails/actionpack-page_caching/actions/workflows/ci.yml/badge.svg)](https://github.com/rails/actionpack-page_caching/actions/workflows/ci.yml)

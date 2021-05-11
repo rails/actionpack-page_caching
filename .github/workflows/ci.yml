@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        gemfile:
+          - '4-2-stable'
+          - '5-0-stable'
+          - '5-1-stable'
+          - '5-2-stable'
+          - '6-0-stable'
+          - '6-1-stable'
+          - 'edge'
+        ruby:
+          - '2.4'
+          - '2.5'
+          - '2.6'
+          - '2.7'
+          - '3.0'
+        exclude:
+          - gemfile: '4-2-stable'
+            ruby: '2.5'
+          - gemfile: '4-2-stable'
+            ruby: '2.6'
+          - gemfile: '4-2-stable'
+            ruby: '2.7'
+          - gemfile: '4-2-stable'
+            ruby: '3.0'
+          - gemfile: '5-0-stable'
+            ruby: '2.7'
+          - gemfile: '5-0-stable'
+            ruby: '3.0'
+          - gemfile: '5-1-stable'
+            ruby: '2.7'
+          - gemfile: '5-1-stable'
+            ruby: '3.0'
+          - gemfile: '5-2-stable'
+            ruby: '2.7'
+          - gemfile: '5-2-stable'
+            ruby: '3.0'
+          - gemfile: '6-0-stable'
+            ruby: '2.4'
+          - gemfile: '6-1-stable'
+            ruby: '2.4'
+          - gemfile: 'edge'
+            ruby: '2.4'
+          - gemfile: 'edge'
+            ruby: '2.5'
+          - gemfile: 'edge'
+            ruby: '2.6'
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    name: ${{ matrix.ruby }} rails-${{ matrix.gemfile }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+          bundler: ${{ fromJSON('["2", "1"]')[matrix.ruby == '2.4'] }}
+
+      - run: bundle exec rake test
+
+    env:
+      BUNDLE_GEMFILE: gemfiles/Gemfile-${{ matrix.gemfile }}
+      BUNDLE_JOBS: 4
+      BUNDLE_RETRY: 3
+
