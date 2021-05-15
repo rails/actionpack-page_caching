@@ -1,3 +1,9 @@
+## 1.2.4 (May 15, 2021)
+
+- Fix `URI.parser` deprecation warning in Rails 6.1
+
+  _Andrew White_
+
 ## 1.2.3 (June 12, 2020)
 
 - Simplifies code in `page_caching.rb`
