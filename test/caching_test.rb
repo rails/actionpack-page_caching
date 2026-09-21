@@ -426,9 +426,10 @@ class ProcPageCachingTest < ActionController::TestCase
   end
 
   def test_class_level_cache_page_raise_error
-    assert_raises(RuntimeError, match: /class-level cache_page method/) do
+    error = assert_raises(RuntimeError) do
       @controller.class.cache_page "cached content", "/proc_page_caching_test/ok"
     end
+    assert_match(/class-level cache_page method/, error.message)
   end
 end
 
@@ -482,9 +483,10 @@ class SymbolPageCachingTest < ActionController::TestCase
   end
 
   def test_class_level_cache_page_raise_error
-    assert_raises(RuntimeError, match: /class-level cache_page method/) do
+    error = assert_raises(RuntimeError) do
       @controller.class.cache_page "cached content", "/symbol_page_caching_test/ok"
     end
+    assert_match(/class-level cache_page method/, error.message)
   end
 end
 
@@ -539,8 +541,9 @@ class CallablePageCachingTest < ActionController::TestCase
   end
 
   def test_class_level_cache_page_raise_error
-    assert_raises(RuntimeError, match: /class-level cache_page method/) do
+    error = assert_raises(RuntimeError) do
       @controller.class.cache_page "cached content", "/callable_page_caching_test/ok"
     end
+    assert_match(/class-level cache_page method/, error.message)
   end
 end
