@@ -200,6 +200,23 @@ class PageCachingTest < ActionController::TestCase
     assert_predicate Find.find(File.join(project_root, "test")).grep(/pwnd/), :empty?
   end
 
+  def test_cache_does_not_escape_into_sibling_sharing_name_prefix
+    draw do
+      get "/page_caching_test/ok/:id", to: "page_caching_test#ok"
+    end
+
+    # Relative to the cache directory, "../../../" is the directory holding it.
+    ["../../../#{CACHE_DIR}_sibling/page", "../../../#{CACHE_DIR}_sibling"].each do |id|
+      if Rails.version =~ /^4\./
+        get :ok, id: id
+      else
+        get :ok, params: { id: id }
+      end
+    end
+
+    assert_equal [CACHE_DIR], Dir.entries(TEST_TMP_DIR) - [".", ".."]
+  end
+
   def test_page_caching_resources_saves_to_correct_path_with_extension_even_if_default_route
     draw do
       get "posts.:format", to: "posts#index", as: :formatted_posts

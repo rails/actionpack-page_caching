@@ -157,10 +157,11 @@ module ActionController
           end
 
           def cache_path(path, extension = nil)
-            unnormalized_path = File.join(normalized_cache_directory, cache_file(path, extension))
+            cache_directory = normalized_cache_directory
+            unnormalized_path = File.join(cache_directory, cache_file(path, extension))
             normalized_path = File.expand_path(unnormalized_path)
 
-            normalized_path if normalized_path.start_with?(normalized_cache_directory)
+            normalized_path if normalized_path.start_with?(File.join(cache_directory, ""))
           end
 
           def delete(path)
