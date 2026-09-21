@@ -1,3 +1,9 @@
+## 1.2.5 (September 21, 2026)
+
+- Fix directory check for directory with shared prefix
+
+ _John Hawthorn_
+
 ## 1.2.4 (May 15, 2021)
 
 - Fix `URI.parser` deprecation warning in Rails 6.1
